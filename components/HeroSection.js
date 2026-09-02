@@ -1,122 +1,62 @@
 'use client';
 
-import { Sparkles, ArrowRight, Code, Heart, Clock, Layers, Globe } from 'lucide-react';
+import { ArrowRight, Globe2, MessageCircle } from 'lucide-react';
 
 export default function HeroSection({ profile }) {
   const stats = profile?.stats || [
-    { label: "자체 개발 복지 솔루션", value: "10+", unit: "개" },
-    { label: "행정 소요시간 단축", value: "70", unit: "%" },
-    { label: "사회복지 실천 경력", value: "10", unit: "년차" },
-    { label: "스마트워크 강의 & 멘토링", value: "20+", unit: "회" }
+    { label: '자체 개발 복지 솔루션', value: '10+', unit: '개' },
+    { label: '행정 소요시간 단축', value: '70', unit: '%' },
+    { label: '사회복지 실천 경력', value: '10', unit: '년차' },
+    { label: '스마트워크 강의 & 멘토링', value: '20+', unit: '회' },
   ];
 
   return (
-    <section style={{
-      padding: '80px 0 60px',
-      position: 'relative',
-      background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(49, 130, 246, 0.12), transparent)'
-    }}>
-      <div className="container" style={{ textAlign: 'center' }}>
-        {/* Top Floating Badge */}
-        <div style={{ display: 'inline-flex', marginBottom: '24px' }}>
-          <div className="toss-badge animate-fade-up" style={{ padding: '8px 18px', fontSize: '0.95rem' }}>
-            <Sparkles size={16} color="#3182F6" />
-            <span>복지와 기술의 만남 &middot; 스마트워크 소프트웨어 크리에이터</span>
+    <section className="hero" aria-labelledby="hero-title">
+      <div className="container">
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <div className="hero-domain">
+              <Globe2 size={15} aria-hidden="true" />
+              {profile?.domain || 'parkjuim90.cloud'}
+            </div>
+            <h1 className="hero-title" id="hero-title">
+              사람에게 쓰는 시간은 늘리고,<br />
+              <strong>반복 행정은 줄입니다.</strong>
+            </h1>
+            <p className="hero-intro">
+              {profile?.introduction || '10년 차 현직 사회복지사이자 실무 문제를 코딩으로 직접 해결하는 빌더입니다. 현장의 반복 행정을 줄여 복지사가 사람에 온전히 집중할 수 있는 실용적인 웹 도구를 만듭니다.'}
+            </p>
+            <div className="hero-actions">
+              <a className="button button--primary" href="#archive">
+                만든 도구 살펴보기 <ArrowRight size={17} aria-hidden="true" />
+              </a>
+              <a className="button button--secondary" href="#guestbook">
+                방명록 남기기 <MessageCircle size={17} aria-hidden="true" />
+              </a>
+            </div>
           </div>
+
+          <aside className="field-note" aria-label="도구를 만드는 업무 흐름">
+            <div className="field-note-header">
+              <span>Field note</span>
+              <span>WONJU · 2026</span>
+            </div>
+            <h2 className="field-note-title">현장에서 발견한 불편을 작동하는 도구로 바꿉니다.</h2>
+            <div className="workflow">
+              <div className="workflow-step"><span>01</span><span>현장의 문제를 가까이서 관찰</span></div>
+              <div className="workflow-step"><span>02</span><span>복잡한 업무 흐름을 단순하게 정리</span></div>
+              <div className="workflow-step"><span>03</span><span>누구나 바로 쓰는 도구로 구현</span></div>
+              <div className="workflow-step"><span>04</span><span>사람에게 돌아가는 시간을 확인</span></div>
+            </div>
+            <span className="field-note-stamp">BUILT FOR CARE</span>
+          </aside>
         </div>
 
-        {/* Toss Big Hero Headline */}
-        <h1 className="title-hero animate-fade-up" style={{ maxWidth: '880px', margin: '0 auto 24px', animationDelay: '0.1s' }}>
-          기술로 복지의 온도를 높이고,<br />
-          <span style={{ color: '#3182F6' }}>행정의 부담</span>을 덜어냅니다
-        </h1>
-
-        {/* Intro Body */}
-        <p style={{
-          fontSize: 'clamp(1.1rem, 2vw, 1.3rem)',
-          color: '#4E5968',
-          maxWidth: '680px',
-          margin: '0 auto 40px',
-          lineHeight: '1.7',
-          fontWeight: '500',
-          animationDelay: '0.2s'
-        }} className="animate-fade-up">
-          {profile?.introduction ||
-            "10년 차 현직 사회복지사이자 실무 문제를 코딩으로 직접 해결하는 빌더입니다. 현장의 반복 행정을 줄여 복지사가 사람에 온전히 집중할 수 있는 실용적인 웹 도구를 만듭니다."}
-        </p>
-
-        {/* Action Buttons & Domain Chip */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '16px',
-          flexWrap: 'wrap',
-          marginBottom: '32px',
-          animationDelay: '0.3s'
-        }} className="animate-fade-up">
-          <a href="#archive" className="btn-toss btn-toss-primary" style={{ padding: '16px 32px', fontSize: '1.05rem' }}>
-            개발한 프로그램 둘러보기 <ArrowRight size={18} />
-          </a>
-          <a href="#guestbook" className="btn-toss btn-toss-secondary" style={{ padding: '16px 28px', fontSize: '1.05rem' }}>
-            응원 방명록 남기기 💬
-          </a>
-        </div>
-
-        {/* Custom Domain Highlight Tag */}
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: '#ffffff',
-          border: '1px solid #E5E8EB',
-          padding: '8px 16px',
-          borderRadius: '999px',
-          fontSize: '0.85rem',
-          color: '#4E5968',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-          marginBottom: '60px'
-        }}>
-          <Globe size={14} color="#3182F6" />
-          <span>공식 도메인: <strong style={{ color: '#191F28' }}>{profile?.domain || "parkjuim90.cloud"}</strong></span>
-        </div>
-
-        {/* Toss Metric / Stat Cards Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '20px',
-          marginTop: '10px'
-        }}>
-          {stats.map((stat, idx) => (
-            <div
-              key={idx}
-              className="toss-card"
-              style={{
-                padding: '28px 24px',
-                textAlign: 'center',
-                background: '#ffffff',
-                border: '1px solid rgba(0, 0, 0, 0.05)'
-              }}
-            >
-              <div style={{
-                fontSize: '2.5rem',
-                fontWeight: '900',
-                color: '#191F28',
-                letterSpacing: '-0.03em',
-                lineHeight: '1.2'
-              }}>
-                <span style={{ color: idx === 1 ? '#3182F6' : '#191F28' }}>{stat.value}</span>
-                <span style={{ fontSize: '1.3rem', fontWeight: '700', marginLeft: '4px', color: '#6B7684' }}>{stat.unit}</span>
-              </div>
-              <div style={{
-                fontSize: '0.95rem',
-                fontWeight: '600',
-                color: '#6B7684',
-                marginTop: '8px'
-              }}>
-                {stat.label}
-              </div>
+        <div className="stats-strip" aria-label="주요 활동 지표">
+          {stats.map((stat) => (
+            <div className="stat" key={stat.label}>
+              <div className="stat-value">{stat.value}<span className="stat-unit">{stat.unit}</span></div>
+              <div className="stat-label">{stat.label}</div>
             </div>
           ))}
         </div>

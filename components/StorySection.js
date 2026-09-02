@@ -1,126 +1,51 @@
 'use client';
 
 import { useState } from 'react';
-import { BookOpen, Heart, Clock, ArrowRight } from 'lucide-react';
+import { ArrowRight, Clock, Heart } from 'lucide-react';
 
 export default function StorySection({ stories = [] }) {
   const [likes, setLikes] = useState({});
 
-  const handleLike = (id, currentLikes, e) => {
-    e.stopPropagation();
-    setLikes(prev => ({
-      ...prev,
-      [id]: (prev[id] !== undefined ? prev[id] : currentLikes) + 1
+  const handleLike = (id, currentLikes) => {
+    setLikes((previous) => ({
+      ...previous,
+      [id]: (previous[id] ?? currentLikes) + 1,
     }));
   };
 
   return (
-    <section id="stories" style={{ padding: '100px 0', background: '#ffffff' }}>
+    <section className="section section--white" id="stories" aria-labelledby="stories-title">
       <div className="container">
-        {/* Section Header */}
-        <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 60px' }}>
-          <div className="toss-badge" style={{ marginBottom: '16px' }}>
-            게시판 &middot; Stories & Tech
-          </div>
-          <h2 className="title-section">
-            현장의 이야기와<br />
-            스마트워크 인사이트
-          </h2>
-          <p className="subtitle-section">
-            사회복지 실천 현장에서 겪은 고민, 도구 개발 비하인드 스토리, 실무 팁을 기록합니다.
-          </p>
-        </div>
+        <header className="section-head section-head--center">
+          <span className="eyebrow">Field stories</span>
+          <h2 className="section-title" id="stories-title">만드는 과정과 현장에서 배운 것들</h2>
+          <p className="section-description">복지 현장의 고민, 도구 개발의 뒷이야기, 동료들과 나누고 싶은 스마트워크 경험을 기록합니다.</p>
+        </header>
 
-        {/* Stories Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '24px'
-        }}>
+        <div className="story-grid">
           {stories.map((story) => {
-            const currentLikeCount = likes[story.id] !== undefined ? likes[story.id] : story.likes;
+            const liked = likes[story.id] !== undefined;
+            const likeCount = liked ? likes[story.id] : story.likes;
             return (
-              <article
-                key={story.id}
-                className="toss-card"
-                style={{
-                  padding: '32px',
-                  background: '#F9FAFB',
-                  border: '1px solid #E5E8EB',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <span style={{
-                      fontSize: '0.8rem',
-                      fontWeight: '700',
-                      color: '#3182F6',
-                      background: '#E8F3FF',
-                      padding: '4px 10px',
-                      borderRadius: '6px'
-                    }}>
-                      {story.tag}
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: '#8B95A1' }}>
-                      <Clock size={12} />
-                      <span>{story.readTime} 읽기 &middot; {story.date}</span>
-                    </div>
-                  </div>
-
-                  <h3 style={{
-                    fontSize: '1.25rem',
-                    fontWeight: '800',
-                    color: '#191F28',
-                    lineHeight: '1.4',
-                    marginBottom: '14px',
-                    letterSpacing: '-0.02em'
-                  }}>
-                    {story.title}
-                  </h3>
-
-                  <p style={{
-                    fontSize: '0.93rem',
-                    color: '#4E5968',
-                    lineHeight: '1.65',
-                    marginBottom: '24px'
-                  }}>
-                    {story.content}
-                  </p>
+              <article className="story-card" key={story.id}>
+                <div className="story-meta">
+                  <span className="story-tag">{story.tag}</span>
+                  <span className="story-date"><Clock size={12} aria-hidden="true" /> {story.readTime} 읽기 · {story.date}</span>
                 </div>
-
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingTop: '16px',
-                  borderTop: '1px solid #E5E8EB'
-                }}>
+                <h3>{story.title}</h3>
+                <p>{story.content}</p>
+                <div className="story-footer">
                   <button
-                    onClick={(e) => handleLike(story.id, story.likes, e)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '0.88rem',
-                      fontWeight: '700',
-                      color: likes[story.id] !== undefined ? '#e11d48' : '#6B7684',
-                      background: likes[story.id] !== undefined ? '#FFE4E6' : '#FFFFFF',
-                      padding: '6px 14px',
-                      borderRadius: '999px',
-                      border: '1px solid #E5E8EB',
-                      transition: 'all 0.2s'
-                    }}
+                    className={`like-button${liked ? ' is-liked' : ''}`}
+                    type="button"
+                    aria-label={`${story.title} 공감 ${likeCount}개`}
+                    aria-pressed={liked}
+                    onClick={() => handleLike(story.id, story.likes)}
                   >
-                    <Heart size={14} fill={likes[story.id] !== undefined ? '#e11d48' : 'none'} />
-                    <span>{currentLikeCount}</span>
+                    <Heart size={14} fill={liked ? 'currentColor' : 'none'} aria-hidden="true" />
+                    {likeCount}
                   </button>
-
-                  <span style={{ fontSize: '0.88rem', fontWeight: '700', color: '#3182F6', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    읽기 <ArrowRight size={14} />
-                  </span>
+                  <span className="read-label">기록 읽기 <ArrowRight size={14} aria-hidden="true" /></span>
                 </div>
               </article>
             );

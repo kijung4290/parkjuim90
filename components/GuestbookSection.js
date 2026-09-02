@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageSquare, Send, Sparkles, User, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Send } from 'lucide-react';
 
 export default function GuestbookSection({ initialGuestbook = [] }) {
   const [guestbook, setGuestbook] = useState(initialGuestbook);
@@ -9,257 +9,142 @@ export default function GuestbookSection({ initialGuestbook = [] }) {
   const [message, setMessage] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('💬');
   const [loading, setLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const emojis = ['💬', '💙', '🚀', '✨', '🔥', '👏', '💡', '🍀'];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const addLocalEntry = () => {
+    const now = new Date();
+    const entry = {
+      id: Date.now(),
+      author: author.trim(),
+      emoji: selectedEmoji,
+      message: message.trim(),
+      date: `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`,
+    };
+    setGuestbook((previous) => [entry, ...previous]);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     if (!author.trim() || !message.trim()) return;
 
     setLoading(true);
-    setSuccessMsg('');
+    setSuccessMessage('');
 
     try {
-      const res = await fetch('/api/guestbook', {
+      const response = await fetch('/api/guestbook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          author,
-          emoji: selectedEmoji,
-          message
-        })
+        body: JSON.stringify({ author: author.trim(), emoji: selectedEmoji, message: message.trim() }),
       });
 
-      if (res.ok) {
-        const json = await res.json();
-        if (json.entry) {
-          setGuestbook(prev => [json.entry, ...prev]);
-        }
-        setAuthor('');
-        setMessage('');
-        setSuccessMsg('소중한 응원 메시지가 등록되었습니다! 감사합니다.');
-        setTimeout(() => setSuccessMsg(''), 4000);
-      } else {
-        alert('메시지 등록에 실패했습니다. 잠시 후 다시 시도해주세요.');
-      }
-    } catch (err) {
-      console.error(err);
-      // Fallback local update
-      const now = new Date();
-      const newEntry = {
-        id: Date.now(),
-        author: author.trim(),
-        emoji: selectedEmoji,
-        message: message.trim(),
-        date: `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`
-      };
-      setGuestbook(prev => [newEntry, ...prev]);
+      if (!response.ok) throw new Error('Guestbook request failed');
+      const result = await response.json();
+      if (result.entry) setGuestbook((previous) => [result.entry, ...previous]);
+      else addLocalEntry();
+    } catch (error) {
+      console.error(error);
+      addLocalEntry();
+    } finally {
       setAuthor('');
       setMessage('');
-      setSuccessMsg('메시지가 등록되었습니다!');
-      setTimeout(() => setSuccessMsg(''), 4000);
+      setSuccessMessage('응원 메시지가 등록되었습니다. 고맙습니다!');
+      setLoading(false);
+      window.setTimeout(() => setSuccessMessage(''), 4000);
     }
-    setLoading(false);
   };
 
   return (
-    <section id="guestbook" style={{ padding: '100px 0', background: '#F2F4F6' }}>
+    <section className="section section--sage" id="guestbook" aria-labelledby="guestbook-title">
       <div className="container">
-        {/* Section Header */}
-        <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 50px' }}>
-          <div className="toss-badge-gray toss-badge" style={{ marginBottom: '16px' }}>
-            응원 & 소통 &middot; Guestbook
-          </div>
-          <h2 className="title-section">
-            방문자 방명록 & 응원 한마디
-          </h2>
-          <p className="subtitle-section">
-            도구를 사용해보신 소감이나 협업 제안, 따뜻한 응원의 메시지를 남겨주세요.
-          </p>
-        </div>
+        <header className="section-head">
+          <span className="eyebrow">Guestbook</span>
+          <h2 className="section-title" id="guestbook-title">짧은 인사와 응원을 남겨주세요.</h2>
+          <p className="section-description">도구를 사용한 소감, 협업 제안, 따뜻한 한마디를 모두 반갑게 읽겠습니다.</p>
+        </header>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(300px, 380px) 1fr',
-          gap: '32px',
-          alignItems: 'start'
-        }} className="guestbook-container">
+        <div className="guestbook-layout">
+          <div className="guestbook-form">
+            <h3>방명록 작성</h3>
 
-          {/* Form Card */}
-          <div className="toss-card" style={{ padding: '32px', background: '#ffffff' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#191F28', marginBottom: '20px' }}>
-              한마디 남기기
-            </h3>
-
-            {successMsg && (
-              <div style={{
-                background: '#E8F3FF',
-                color: '#3182F6',
-                padding: '12px 16px',
-                borderRadius: '12px',
-                fontSize: '0.88rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '16px'
-              }}>
-                <CheckCircle2 size={16} />
-                <span>{successMsg}</span>
+            {successMessage && (
+              <div className="success-message" role="status">
+                <CheckCircle2 size={17} aria-hidden="true" />
+                <span>{successMessage}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit}>
-              {/* Emoji Selector */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#4E5968', marginBottom: '8px' }}>
-                  이모지 선택
-                </label>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {emojis.map((em) => (
-                    <button
-                      key={em}
-                      type="button"
-                      onClick={() => setSelectedEmoji(em)}
-                      style={{
-                        fontSize: '1.25rem',
-                        padding: '6px 10px',
-                        borderRadius: '10px',
-                        background: selectedEmoji === em ? '#E8F3FF' : '#F9FAFB',
-                        border: selectedEmoji === em ? '2px solid #3182F6' : '1px solid #E5E8EB',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {em}
-                    </button>
-                  ))}
-                </div>
+              <span className="emoji-label" id="emoji-label">마음을 골라주세요</span>
+              <div className="emoji-group" role="group" aria-labelledby="emoji-label">
+                {emojis.map((emoji) => (
+                  <button
+                    className={`emoji-button${selectedEmoji === emoji ? ' is-selected' : ''}`}
+                    type="button"
+                    key={emoji}
+                    aria-label={`${emoji} 선택`}
+                    aria-pressed={selectedEmoji === emoji}
+                    onClick={() => setSelectedEmoji(emoji)}
+                  >
+                    {emoji}
+                  </button>
+                ))}
               </div>
 
-              {/* Author */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#4E5968', marginBottom: '6px' }}>
-                  작성자 (이름 / 소속)
-                </label>
+              <div className="form-field">
+                <label htmlFor="guestbook-author">이름 또는 소속</label>
                 <input
+                  id="guestbook-author"
                   type="text"
-                  placeholder="예: 원주복지관 김철수, 사회복지 실습생"
+                  placeholder="예: 동료 사회복지사"
                   value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
+                  onChange={(event) => setAuthor(event.target.value)}
+                  maxLength={40}
                   required
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #E5E8EB',
-                    fontSize: '0.92rem',
-                    outline: 'none'
-                  }}
                 />
               </div>
 
-              {/* Message */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#4E5968', marginBottom: '6px' }}>
-                  응원 메시지
-                </label>
+              <div className="form-field">
+                <label htmlFor="guestbook-message">메시지</label>
                 <textarea
-                  placeholder="따뜻한 응원이나 의견을 자유롭게 남겨주세요!"
+                  id="guestbook-message"
+                  placeholder="응원이나 의견을 자유롭게 남겨주세요."
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  required
+                  onChange={(event) => setMessage(event.target.value)}
+                  maxLength={300}
                   rows={4}
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #E5E8EB',
-                    fontSize: '0.92rem',
-                    outline: 'none',
-                    resize: 'none',
-                    lineHeight: '1.5'
-                  }}
+                  required
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-toss btn-toss-primary"
-                style={{ width: '100%' }}
-              >
-                {loading ? '등록 중...' : (
-                  <>
-                    <Send size={16} />
-                    <span>메시지 남기기</span>
-                  </>
-                )}
+              <button className="button button--primary" type="submit" disabled={loading}>
+                <Send size={16} aria-hidden="true" />
+                {loading ? '등록 중…' : '메시지 남기기'}
               </button>
             </form>
           </div>
 
-          {/* Messages List Feed */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '560px', overflowY: 'auto', paddingRight: '4px' }}>
+          <div className="message-list" aria-live="polite" aria-label="방명록 메시지">
             {guestbook.map((entry) => (
-              <div
-                key={entry.id}
-                className="toss-card"
-                style={{
-                  padding: '24px',
-                  background: '#ffffff',
-                  border: '1px solid #E5E8EB',
-                  display: 'flex',
-                  gap: '16px'
-                }}
-              >
-                <div style={{
-                  fontSize: '1.8rem',
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '12px',
-                  background: '#F9FAFB',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  {entry.emoji || '💬'}
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontWeight: '800', fontSize: '0.95rem', color: '#191F28' }}>
-                      {entry.author}
-                    </span>
-                    <span style={{ fontSize: '0.8rem', color: '#8B95A1' }}>
-                      {entry.date}
-                    </span>
+              <article className="message-card" key={entry.id}>
+                <div className="message-emoji" aria-hidden="true">{entry.emoji || '💬'}</div>
+                <div className="message-content">
+                  <div className="message-head">
+                    <span className="message-author">{entry.author}</span>
+                    <time className="message-date">{entry.date}</time>
                   </div>
-
-                  <p style={{ fontSize: '0.92rem', color: '#4E5968', lineHeight: '1.6' }}>
-                    {entry.message}
-                  </p>
+                  <p>{entry.message}</p>
                 </div>
-              </div>
+              </article>
             ))}
 
             {guestbook.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#8B95A1', background: '#ffffff', borderRadius: '16px' }}>
-                아직 등록된 응원글이 없습니다. 첫 번째 응원 한마디를 남겨보세요!
-              </div>
+              <div className="empty-state">아직 메시지가 없습니다. 첫 번째 인사를 남겨주세요.</div>
             )}
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @media (max-width: 860px) {
-          .guestbook-container {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }

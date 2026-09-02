@@ -6,7 +6,6 @@ import ArchiveSection from '@/components/ArchiveSection';
 import ExperienceSection from '@/components/ExperienceSection';
 import StorySection from '@/components/StorySection';
 import GuestbookSection from '@/components/GuestbookSection';
-import DomainGuideSection from '@/components/DomainGuideSection';
 import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 
@@ -39,36 +38,19 @@ export default async function Home() {
   const guestbook = data.guestbook || [];
 
   return (
-    <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* 1. Toss-style Sticky Navbar */}
-      <Navbar domain={profile.domain || "parkjuim90.cloud"} />
-
-      {/* 2. Hero Section */}
-      <HeroSection profile={profile} />
-
-      {/* 3. Core Philosophy (4 Pillars) */}
-      <PhilosophySection philosophy={philosophy} />
-
-      {/* 4. Development Archive (8 Key Projects with Category Filters & Modals) */}
-      <ArchiveSection projects={projects} />
-
-      {/* 5. Career & Journey Timeline */}
-      <ExperienceSection experiences={experiences} />
-
-      {/* 6. Board & Tech Stories */}
-      <StorySection stories={stories} />
-
-      {/* 7. Interactive Guestbook Feed */}
-      <GuestbookSection initialGuestbook={guestbook} />
-
-      {/* 8. Gabia Domain Connection Guide */}
-      <DomainGuideSection domain={profile.domain || "parkjuim90.cloud"} />
-
-      {/* 9. Contact Section */}
-      <ContactSection profile={profile} />
-
-      {/* 10. Footer */}
+    <>
+      <a className="skip-link" href="#main-content">본문으로 바로가기</a>
+      <Navbar />
+      <main id="main-content">
+        <HeroSection profile={profile} />
+        <PhilosophySection philosophy={philosophy} />
+        <ArchiveSection projects={projects} />
+        <ExperienceSection experiences={experiences} />
+        <StorySection stories={stories} />
+        <GuestbookSection initialGuestbook={guestbook} />
+        <ContactSection profile={profile} />
+      </main>
       <Footer profile={profile} />
-    </main>
+    </>
   );
 }
