@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-    BarChart3,
     BriefcaseBusiness,
     Check,
     ChevronDown,
@@ -35,7 +34,6 @@ import './admin.css';
 const SECTIONS = [
     { id: 'hero', label: '첫 화면 슬라이드', description: '영상·현장 사진·글귀', icon: ImageIcon },
     { id: 'profile', label: '기본 정보', description: '이름, 소개, 연락처', icon: UserRound },
-    { id: 'stats', label: '주요 지표', description: '성과를 보여주는 숫자', icon: BarChart3 },
     { id: 'philosophy', label: '일하는 원칙', description: '나를 설명하는 가치', icon: Compass },
     { id: 'projects', label: '프로젝트', description: '만든 도구와 서비스', icon: FolderKanban },
     { id: 'experiences', label: '경력', description: '소속과 주요 역할', icon: BriefcaseBusiness },
@@ -309,9 +307,6 @@ export default function AdminPage() {
     const updateProfile = (key, value) =>
         setData((prev) => ({ ...prev, profile: { ...prev.profile, [key]: value } }));
 
-    const mutateStats = (mutate) =>
-        setData((prev) => ({ ...prev, profile: { ...prev.profile, stats: mutate([...(prev.profile.stats || [])]) } }));
-
     const mutateList = (key, mutate) =>
         setData((prev) => ({ ...prev, [key]: mutate([...(prev[key] || [])]) }));
 
@@ -344,7 +339,6 @@ export default function AdminPage() {
 
     const getSectionCount = (id) => {
         if (id === 'hero') return heroSlides.length;
-        if (id === 'stats') return stats.length;
         if (['philosophy', 'projects', 'experiences', 'stories', 'guestbook'].includes(id)) return data[id].length;
         return null;
     };
@@ -398,7 +392,6 @@ export default function AdminPage() {
     if (!data) return <div className="admin-center">데이터를 불러오는 중…</div>;
 
     const profile = data.profile || {};
-    const stats = profile.stats || [];
     const hero = data.hero || DEFAULT_HERO;
     const heroSlides = hero.slides || [];
 
@@ -593,59 +586,6 @@ export default function AdminPage() {
                             <Field label="소개글" wide>
                                 <textarea value={profile.introduction || ''} onChange={(e) => updateProfile('introduction', e.target.value)} placeholder="어떤 일을 하는 사람인지 2~3문장으로 소개해주세요." />
                             </Field>
-                        </div>
-                    </section>
-
-                    {/* 주요 지표 */}
-                    <section className={`admin-card${activeSection === 'stats' ? ' is-active' : ''}`} id="stats">
-                        <div className="admin-card-head">
-                            <div>
-                                <h2>주요 지표</h2>
-                                <p>첫 화면 아래쪽 숫자 띠에 표시됩니다. 4개를 권장합니다.</p>
-                            </div>
-                            <button className="button button--soft button--small" type="button"
-                                onClick={() => mutateStats((list) => [...list, { label: '', value: '', unit: '' }])}>
-                                <Plus size={16} /> 지표 추가
-                            </button>
-                        </div>
-                        <div className="admin-list">
-                            {stats.map((stat, index) => (
-                                <ItemCard
-                                    label="지표" title={stat.label} key={index} index={index} total={stats.length}
-                                    onMove={(i, delta) => mutateStats((list) => {
-                                        const target = i + delta;
-                                        if (target < 0 || target >= list.length) return list;
-                                        [list[i], list[target]] = [list[target], list[i]];
-                                        return list;
-                                    })}
-                                    onRemove={(i) => {
-                                        if (!window.confirm('이 항목을 삭제할까요?')) return;
-                                        mutateStats((list) => list.filter((_, index2) => index2 !== i));
-                                    }}
-                                >
-                                    <div className="admin-grid admin-grid--three">
-                                        <Field label="설명">
-                                            <input value={stat.label || ''} onChange={(e) => mutateStats((list) => {
-                                                list[index] = { ...list[index], label: e.target.value };
-                                                return list;
-                                            })} placeholder="자체 개발 복지 솔루션" />
-                                        </Field>
-                                        <Field label="숫자">
-                                            <input value={stat.value || ''} onChange={(e) => mutateStats((list) => {
-                                                list[index] = { ...list[index], value: e.target.value };
-                                                return list;
-                                            })} placeholder="10+" />
-                                        </Field>
-                                        <Field label="단위">
-                                            <input value={stat.unit || ''} onChange={(e) => mutateStats((list) => {
-                                                list[index] = { ...list[index], unit: e.target.value };
-                                                return list;
-                                            })} placeholder="개" />
-                                        </Field>
-                                    </div>
-                                </ItemCard>
-                            ))}
-                            {stats.length === 0 && <p className="admin-empty">등록된 지표가 없습니다.</p>}
                         </div>
                     </section>
 

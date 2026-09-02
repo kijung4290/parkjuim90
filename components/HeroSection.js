@@ -54,7 +54,7 @@ function SlideMedia({ slide, shouldPlay }) {
   );
 }
 
-export default function HeroSection({ profile, hero }) {
+export default function HeroSection({ hero }) {
   const slides = useMemo(() => {
     const configured = Array.isArray(hero?.slides) ? hero.slides : [];
     const visible = configured.filter((slide) => (
@@ -134,18 +134,6 @@ export default function HeroSection({ profile, hero }) {
         </div>
       </div>
 
-      {profile?.stats?.length > 0 && (
-        <div className="container">
-          <div className="stats-strip" aria-label="주요 활동 지표">
-            {profile.stats.map((stat) => (
-              <div className="stat" key={stat.label}>
-                <div className="stat-value">{stat.value}<span className="stat-unit">{stat.unit}</span></div>
-                <div className="stat-label">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </section>
   );
 }

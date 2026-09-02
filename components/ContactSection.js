@@ -1,11 +1,60 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Copy, Globe2, Mail, MapPin } from 'lucide-react';
+import {
+  BookOpenCheck,
+  Check,
+  Copy,
+  FileSpreadsheet,
+  Globe2,
+  Handshake,
+  Mail,
+  MapPin,
+  MessageSquareText,
+  Send,
+} from 'lucide-react';
+
+const REQUEST_TYPES = [
+  {
+    id: 'lecture',
+    label: '강의 요청',
+    subject: '강의 요청',
+    icon: BookOpenCheck,
+    placeholder: '희망 일정, 교육 대상과 인원, 원하는 주제와 교육 시간을 알려주세요.',
+  },
+  {
+    id: 'template',
+    label: '업무양식 제작',
+    subject: '업무양식·자동화 제작 요청',
+    icon: FileSpreadsheet,
+    placeholder: '현재 반복하고 있는 업무, 필요한 양식이나 자동화 기능, 사용하는 프로그램을 알려주세요.',
+  },
+  {
+    id: 'collaboration',
+    label: '도구 도입·협업',
+    subject: '도구 도입·협업 문의',
+    icon: Handshake,
+    placeholder: '관심 있는 도구와 활용하려는 기관·현장, 함께 논의하고 싶은 내용을 알려주세요.',
+  },
+  {
+    id: 'other',
+    label: '기타 문의',
+    subject: '기타 문의',
+    icon: MessageSquareText,
+    placeholder: '문의하실 내용을 자유롭게 적어주세요.',
+  },
+];
 
 export default function ContactSection({ profile }) {
   const [copied, setCopied] = useState(false);
+  const [requestType, setRequestType] = useState(REQUEST_TYPES[0].id);
+  const [name, setName] = useState('');
+  const [organization, setOrganization] = useState('');
+  const [replyEmail, setReplyEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [mailOpened, setMailOpened] = useState(false);
   const email = profile?.email;
+  const selectedRequest = REQUEST_TYPES.find((type) => type.id === requestType) || REQUEST_TYPES[0];
 
   const copyEmail = async () => {
     try {
@@ -13,9 +62,32 @@ export default function ContactSection({ profile }) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      // http 환경이나 권한 거부로 복사가 막히면 메일 앱을 대신 엽니다.
       window.location.href = `mailto:${email}`;
     }
+  };
+
+  const openEmailDraft = (event) => {
+    event.preventDefault();
+    if (!email) return;
+
+    const subject = `[포트폴리오] ${selectedRequest.subject} - ${organization || name}`;
+    const body = [
+      '안녕하세요. 포트폴리오를 보고 문의드립니다.',
+      '',
+      `[문의 종류] ${selectedRequest.label}`,
+      `[이름] ${name}`,
+      `[소속·기관] ${organization || '미입력'}`,
+      `[회신 이메일] ${replyEmail}`,
+      '',
+      '[문의 내용]',
+      message,
+      '',
+      '---',
+      'parkjuim90.cloud에서 작성한 문의입니다.',
+    ].join('\n');
+
+    setMailOpened(true);
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
@@ -23,43 +95,100 @@ export default function ContactSection({ profile }) {
       <div className="container">
         <div className="contact-panel">
           <div className="contact-copy">
-            <span className="eyebrow">Let&apos;s work together</span>
-            <h2 id="contact-title">복지 현장의 더 나은 일하는 방식을 함께 만들어요.</h2>
-            <p className="section-description">프로그램 도입, 디지털 전환 교육, 현장 중심의 협업 제안을 기다립니다.</p>
-          </div>
+            <span className="eyebrow">Request & collaboration</span>
+            <h2 id="contact-title">필요한 일을 알려주시면<br />함께 방법을 찾겠습니다.</h2>
+            <p className="section-description">복지 현장 강의부터 반복 업무를 줄이는 양식과 자동화 도구 제작까지 편하게 문의해주세요.</p>
 
-          <div className="contact-list">
-            <div className="contact-item">
-              <span className="contact-icon"><Mail size={18} aria-hidden="true" /></span>
-              <span>
-                <span className="contact-label">이메일</span>
-                <a className="contact-value contact-value--link" href={`mailto:${email}`}>{email}</a>
-              </span>
-              <button className="contact-action" type="button" onClick={copyEmail} aria-live="polite">
-                {copied ? <><Check size={12} aria-hidden="true" /> 복사됨</> : <><Copy size={12} aria-hidden="true" /> 복사</>}
-              </button>
-            </div>
-
-            <div className="contact-item">
-              <span className="contact-icon"><MapPin size={18} aria-hidden="true" /></span>
-              <span>
-                <span className="contact-label">활동 지역</span>
-                <span className="contact-value">{profile?.location}</span>
-              </span>
-              <span className="contact-action">지역사회 기반</span>
-            </div>
-
-            {profile?.blog && (
+            <div className="contact-list">
               <div className="contact-item">
-                <span className="contact-icon"><Globe2 size={18} aria-hidden="true" /></span>
+                <span className="contact-icon"><Mail size={18} aria-hidden="true" /></span>
                 <span>
-                  <span className="contact-label">블로그</span>
-                  <span className="contact-value">사회복지 DX & 실무 기록</span>
+                  <span className="contact-label">받는 이메일</span>
+                  <a className="contact-value contact-value--link" href={`mailto:${email}`}>{email}</a>
                 </span>
-                <a className="contact-action" href={profile.blog} target="_blank" rel="noreferrer">방문하기 ↗</a>
+                <button className="contact-action" type="button" onClick={copyEmail} aria-live="polite">
+                  {copied ? <><Check size={12} aria-hidden="true" /> 복사됨</> : <><Copy size={12} aria-hidden="true" /> 주소 복사</>}
+                </button>
               </div>
-            )}
+
+              <div className="contact-item">
+                <span className="contact-icon"><MapPin size={18} aria-hidden="true" /></span>
+                <span>
+                  <span className="contact-label">활동 지역</span>
+                  <span className="contact-value">{profile?.location}</span>
+                </span>
+                <span className="contact-action">전국 강의·온라인 협업</span>
+              </div>
+
+              {profile?.blog && (
+                <div className="contact-item">
+                  <span className="contact-icon"><Globe2 size={18} aria-hidden="true" /></span>
+                  <span>
+                    <span className="contact-label">블로그</span>
+                    <span className="contact-value">사회복지 DX & 실무 기록</span>
+                  </span>
+                  <a className="contact-action" href={profile.blog} target="_blank" rel="noreferrer">방문하기 ↗</a>
+                </div>
+              )}
+            </div>
           </div>
+
+          <form className="contact-request-form" onSubmit={openEmailDraft}>
+            <div className="request-form-head">
+              <span>REQUEST NOTE</span>
+              <strong>어떤 도움이 필요하세요?</strong>
+              <p>요청 종류를 선택하면 이메일 제목과 본문이 자동으로 정리됩니다.</p>
+            </div>
+
+            <fieldset className="request-type-fieldset">
+              <legend>문의 종류</legend>
+              <div className="request-type-grid">
+                {REQUEST_TYPES.map((type) => (
+                  <button
+                    className={requestType === type.id ? 'is-active' : ''}
+                    type="button"
+                    key={type.id}
+                    aria-pressed={requestType === type.id}
+                    onClick={() => {
+                      setRequestType(type.id);
+                      setMailOpened(false);
+                    }}
+                  >
+                    <type.icon size={17} aria-hidden="true" />
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="request-form-grid">
+              <label className="request-field">
+                <span>이름</span>
+                <input value={name} onChange={(event) => setName(event.target.value)} placeholder="홍길동" required />
+              </label>
+              <label className="request-field">
+                <span>소속·기관</span>
+                <input value={organization} onChange={(event) => setOrganization(event.target.value)} placeholder="○○종합사회복지관" />
+              </label>
+              <label className="request-field request-field--wide">
+                <span>회신받을 이메일</span>
+                <input type="email" value={replyEmail} onChange={(event) => setReplyEmail(event.target.value)} placeholder="name@example.com" required />
+              </label>
+              <label className="request-field request-field--wide">
+                <span>문의 내용</span>
+                <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder={selectedRequest.placeholder} required />
+              </label>
+            </div>
+
+            <button className="button request-submit" type="submit" disabled={!email}>
+              <Send size={17} aria-hidden="true" /> 이메일 작성하기
+            </button>
+            <p className="request-form-note" aria-live="polite">
+              {mailOpened
+                ? '메일 앱을 열었습니다. 내용을 확인한 뒤 전송해주세요.'
+                : '버튼을 누르면 입력 내용이 채워진 메일 앱이 열립니다. 최종 전송은 메일 앱에서 진행됩니다.'}
+            </p>
+          </form>
         </div>
       </div>
     </section>

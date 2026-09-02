@@ -29,7 +29,7 @@ export default async function Home() {
       <a className="skip-link" href="#main-content">본문으로 바로가기</a>
       <Navbar />
       <main id="main-content">
-        <HeroSection profile={profile} hero={hero} />
+        <HeroSection hero={hero} />
         <PhilosophySection philosophy={data.philosophy || []} />
         <ArchiveSection projects={data.projects || []} />
         <ExperienceSection experiences={data.experiences || []} />
