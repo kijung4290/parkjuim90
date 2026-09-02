@@ -32,7 +32,7 @@ export default async function Home() {
       <main id="main-content">
         <HeroSection hero={hero} />
         <PhilosophySection philosophy={data.philosophy || []} />
-        <ArchiveSection projects={TOOL_CATALOG} />
+        <ArchiveSection projects={data.projects || TOOL_CATALOG} />
         <ExperienceSection experiences={data.experiences || []} />
         <StorySection stories={data.stories || []} />
         <GuestbookSection initialGuestbook={data.guestbook || []} />

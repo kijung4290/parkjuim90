@@ -45,6 +45,21 @@ const SECTIONS = [
 const toLines = (value) => (Array.isArray(value) ? value.join('\n') : '');
 const fromLines = (text) => text.split('\n').map((line) => line.trim()).filter(Boolean);
 const HERO_TYPE_LABELS = { image: '이미지', video: '동영상', quote: '글귀' };
+const PROJECT_LINK_FIELDS = [
+    { id: 'webapp', label: '웹앱 링크', buttonLabel: '웹앱 열기' },
+    { id: 'sheet', label: '실습 시트 링크', buttonLabel: '실습 시트' },
+    { id: 'blog', label: '설명 글 링크', buttonLabel: '설명 글' },
+];
+
+const getProjectLinkValue = (project, linkType) => {
+    const savedLink = Array.isArray(project.links)
+        ? project.links.find((link) => link?.id === linkType)?.url
+        : '';
+
+    if (savedLink) return savedLink;
+    if (linkType === 'webapp' && !project.links?.length && project.link !== '#') return project.link || '';
+    return '';
+};
 
 const normalizePortfolio = (json) => ({
     ...json,
@@ -234,7 +249,7 @@ export default function AdminPage() {
     };
 
     const resetToBundled = async () => {
-        if (!window.confirm('저장된 내용을 지우고 data/portfolio.json의 기본값으로 되돌립니다. 계속할까요?')) return;
+        if (!window.confirm('저장된 내용을 지우고 코드에 포함된 기본값으로 되돌립니다. 계속할까요?')) return;
         setLoading(true);
         try {
             const response = await authorizedFetch('/api/setup/migrate', { method: 'POST' });
@@ -313,6 +328,32 @@ export default function AdminPage() {
     const updateItem = (key, index, patch) =>
         mutateList(key, (list) => {
             list[index] = { ...list[index], ...patch };
+            return list;
+        });
+
+    const updateProjectLink = (index, linkField, url) =>
+        mutateList('projects', (list) => {
+            const project = list[index];
+            const links = Array.isArray(project.links) ? [...project.links] : [];
+
+            if (links.length === 0 && project.link && project.link !== '#' && linkField.id !== 'webapp') {
+                links.push({ id: 'webapp', label: '웹앱 열기', url: project.link });
+            }
+
+            const linkIndex = links.findIndex((link) => link?.id === linkField.id);
+            if (url) {
+                const nextLink = { id: linkField.id, label: linkField.buttonLabel, url };
+                if (linkIndex >= 0) links[linkIndex] = nextLink;
+                else links.push(nextLink);
+            } else if (linkIndex >= 0) {
+                links.splice(linkIndex, 1);
+            }
+
+            const primaryLink = PROJECT_LINK_FIELDS
+                .map((field) => links.find((link) => link?.id === field.id)?.url)
+                .find(Boolean) || '#';
+
+            list[index] = { ...project, links, link: primaryLink };
             return list;
         });
 
@@ -629,8 +670,8 @@ export default function AdminPage() {
                     <section className={`admin-card${activeSection === 'projects' ? ' is-active' : ''}`} id="projects">
                         <div className="admin-card-head">
                             <div>
-                                <h2>프로젝트</h2>
-                                <p>‘대표 프로젝트’로 표시하면 카드가 두 칸 너비로 커집니다.</p>
+                                <h2>만든 도구</h2>
+                                <p>현재 홈페이지에 표시되는 도구의 내용과 연결 링크를 수정합니다.</p>
                             </div>
                             <button className="button button--soft button--small" type="button"
                                 onClick={() => addItem('projects', {
@@ -638,7 +679,7 @@ export default function AdminPage() {
                                     category: PROJECT_CATEGORIES[0].id,
                                     categoryLabel: PROJECT_CATEGORIES[0].label,
                                     title: '', subtitle: '', summary: '', description: '',
-                                    highlights: [], techStack: [], link: '#', badge: '', icon: PROJECT_ICON_NAMES[0],
+                                    highlights: [], techStack: [], link: '#', links: [], badge: '', icon: PROJECT_ICON_NAMES[0],
                                 })}>
                                 <Plus size={16} /> 프로젝트 추가
                             </button>
@@ -654,7 +695,7 @@ export default function AdminPage() {
                                         <Field label="제목">
                                             <input value={project.title || ''} onChange={(e) => updateItem('projects', index, { title: e.target.value })} />
                                         </Field>
-                                        <Field label="영문 부제">
+                                        <Field label="부제">
                                             <input value={project.subtitle || ''} onChange={(e) => updateItem('projects', index, { subtitle: e.target.value })} />
                                         </Field>
                                         <Field label="카테고리">
@@ -678,9 +719,16 @@ export default function AdminPage() {
                                         <Field label="배지" hint="(카드 오른쪽 위 라벨)">
                                             <input value={project.badge || ''} onChange={(e) => updateItem('projects', index, { badge: e.target.value })} placeholder="실무 도입 완료" />
                                         </Field>
-                                        <Field label="링크" hint="(없으면 # 그대로)">
-                                            <input value={project.link || ''} onChange={(e) => updateItem('projects', index, { link: e.target.value })} placeholder="https://..." />
-                                        </Field>
+                                        {PROJECT_LINK_FIELDS.map((linkField) => (
+                                            <Field label={linkField.label} hint="(비워두면 버튼 숨김)" key={linkField.id}>
+                                                <input
+                                                    type="url"
+                                                    value={getProjectLinkValue(project, linkField.id)}
+                                                    onChange={(e) => updateProjectLink(index, linkField, e.target.value)}
+                                                    placeholder="https://..."
+                                                />
+                                            </Field>
+                                        ))}
                                         <Field label="한 줄 요약" wide>
                                             <textarea value={project.summary || ''} onChange={(e) => updateItem('projects', index, { summary: e.target.value })} />
                                         </Field>
