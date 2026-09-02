@@ -9,13 +9,24 @@ const CATEGORIES = [{ id: 'all', label: '전체' }, ...PROJECT_CATEGORIES];
 
 const FOCUSABLE = 'a[href], button:not(:disabled), input, textarea, [tabindex]:not([tabindex="-1"])';
 
-const hasExternalLink = (project) => Boolean(project?.link) && project.link !== '#';
+const getProjectLinks = (project) => {
+  const links = Array.isArray(project?.links)
+    ? project.links.filter((item) => item?.url && item.url !== '#')
+    : [];
+
+  if (links.length > 0) return links;
+  if (project?.link && project.link !== '#') {
+    return [{ id: 'site', label: '사이트 열기', url: project.link }];
+  }
+  return [];
+};
 
 export default function ArchiveSection({ projects = [] }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
   const modalRef = useRef(null);
+  const selectedProjectLinks = getProjectLinks(selectedProject);
 
   // 모달을 열면 포커스를 안으로 가두고, 닫으면 원래 자리로 되돌립니다.
   useEffect(() => {
@@ -196,15 +207,18 @@ export default function ArchiveSection({ projects = [] }) {
             )}
 
             <div className="modal-actions">
-              {hasExternalLink(selectedProject) ? (
-                <a
-                  className="button button--secondary"
-                  href={selectedProject.link}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  사이트 열기 <ExternalLink size={15} aria-hidden="true" />
-                </a>
+              {selectedProjectLinks.length > 0 ? (
+                selectedProjectLinks.map((link) => (
+                  <a
+                    className="button button--secondary"
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    key={link.id || link.url}
+                  >
+                    {link.label} <ExternalLink size={15} aria-hidden="true" />
+                  </a>
+                ))
               ) : (
                 <button className="button button--secondary" type="button" onClick={() => setSelectedProject(null)}>닫기</button>
               )}

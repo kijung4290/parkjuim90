@@ -230,6 +230,12 @@ const getTechStack = (tool) => [
   tool.sheet && 'Google Sheets',
 ].filter(Boolean);
 
+const getProjectLinks = (tool) => [
+  tool.webApp && { id: 'webapp', label: '웹앱 열기', url: tool.webApp },
+  tool.sheet && { id: 'sheet', label: '실습 시트', url: tool.sheet },
+  tool.blog && { id: 'blog', label: '설명 글', url: tool.blog },
+].filter(Boolean);
+
 /**
  * 만든도구.csv의 도구명·설명·링크를 기존 포트폴리오 프로젝트 구조에 맞춘 데이터입니다.
  * 화면 컴포넌트와 레이아웃은 바꾸지 않고, 이 데이터만 기존 카드에 전달합니다.
@@ -237,6 +243,7 @@ const getTechStack = (tool) => [
 export const TOOL_CATALOG = TOOL_ROWS.map((tool) => {
   const category = getProjectCategory(tool.title);
   const audience = tool.audience === '전체' ? '누구나' : tool.audience;
+  const links = getProjectLinks(tool);
 
   return {
     id: tool.id,
@@ -248,7 +255,8 @@ export const TOOL_CATALOG = TOOL_ROWS.map((tool) => {
     description: tool.description,
     highlights: getHighlights(tool),
     techStack: getTechStack(tool),
-    link: tool.webApp || tool.sheet || tool.blog || '#',
+    link: links[0]?.url || '#',
+    links,
     badge: `${tool.category === '공유용' ? '공유' : '실습'} · ${audience}`,
     icon: getProjectIcon(tool.title),
     featured: false,
