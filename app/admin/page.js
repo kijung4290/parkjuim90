@@ -2,19 +2,40 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import {
+    BarChart3,
+    BriefcaseBusiness,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    Compass,
+    ExternalLink,
+    FolderKanban,
+    LogOut,
+    MessagesSquare,
+    NotebookText,
+    Plus,
+    RotateCcw,
+    Save,
+    Settings,
+    Trash2,
+    Undo2,
+    UserRound,
+} from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { PROJECT_CATEGORIES, getCategoryLabel } from '@/lib/projectMeta';
 import { PROJECT_ICON_NAMES } from '@/components/projectIcons';
 import './admin.css';
 
 const SECTIONS = [
-    { id: 'profile', label: '기본 정보' },
-    { id: 'stats', label: '주요 지표' },
-    { id: 'philosophy', label: '일하는 원칙' },
-    { id: 'projects', label: '프로젝트' },
-    { id: 'experiences', label: '경력' },
-    { id: 'stories', label: '기록' },
-    { id: 'guestbook', label: '방명록' },
+    { id: 'profile', label: '기본 정보', description: '이름, 소개, 연락처', icon: UserRound },
+    { id: 'stats', label: '주요 지표', description: '성과를 보여주는 숫자', icon: BarChart3 },
+    { id: 'philosophy', label: '일하는 원칙', description: '나를 설명하는 가치', icon: Compass },
+    { id: 'projects', label: '프로젝트', description: '만든 도구와 서비스', icon: FolderKanban },
+    { id: 'experiences', label: '경력', description: '소속과 주요 역할', icon: BriefcaseBusiness },
+    { id: 'stories', label: '기록', description: '글과 현장 이야기', icon: NotebookText },
+    { id: 'guestbook', label: '방명록', description: '방문자 메시지 관리', icon: MessagesSquare },
+    { id: 'settings', label: '설정', description: '기본 데이터로 초기화', icon: Settings },
 ];
 
 const toLines = (value) => (Array.isArray(value) ? value.join('\n') : '');
@@ -31,19 +52,23 @@ function Field({ label, hint, wide = false, children }) {
 }
 
 /** 반복 항목 하나를 감싸며 순서 이동·삭제 버튼을 제공합니다. */
-function ItemCard({ label, index, total, onMove, onRemove, children }) {
+function ItemCard({ label, title, index, total, onMove, onRemove, children }) {
     return (
-        <div className="admin-item">
-            <div className="admin-item-head">
-                <span className="admin-item-label">{label} {index + 1}</span>
-                <div className="admin-item-tools">
-                    <button type="button" aria-label="위로 이동" disabled={index === 0} onClick={() => onMove(index, -1)}>↑</button>
-                    <button type="button" aria-label="아래로 이동" disabled={index === total - 1} onClick={() => onMove(index, 1)}>↓</button>
-                    <button type="button" className="is-danger" onClick={() => onRemove(index)}>삭제</button>
+        <details className="admin-item" defaultOpen={index === 0}>
+            <summary className="admin-item-head">
+                <span className="admin-item-heading">
+                    <span className="admin-item-label">{label} {index + 1}</span>
+                    <strong>{title || `새 ${label}`}</strong>
+                </span>
+                <div className="admin-item-tools" onClick={(event) => event.stopPropagation()}>
+                    <button type="button" title="위로 이동" aria-label={`${label} ${index + 1} 위로 이동`} disabled={index === 0} onClick={() => onMove(index, -1)}><ChevronUp size={16} /></button>
+                    <button type="button" title="아래로 이동" aria-label={`${label} ${index + 1} 아래로 이동`} disabled={index === total - 1} onClick={() => onMove(index, 1)}><ChevronDown size={16} /></button>
+                    <button type="button" className="is-danger" title="삭제" aria-label={`${title || label} 삭제`} onClick={() => onRemove(index)}><Trash2 size={15} /></button>
                 </div>
-            </div>
-            {children}
-        </div>
+                <ChevronDown className="admin-item-chevron" size={18} aria-hidden="true" />
+            </summary>
+            <div className="admin-item-content">{children}</div>
+        </details>
     );
 }
 
@@ -54,6 +79,7 @@ export default function AdminPage() {
     const [password, setPassword] = useState('');
 
     const [data, setData] = useState(null);
+    const [savedSnapshot, setSavedSnapshot] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null); // { type: 'ok' | 'error', text }
     const [activeSection, setActiveSection] = useState('profile');
@@ -88,7 +114,7 @@ export default function AdminPage() {
                 if (!response.ok) throw new Error('불러오기 실패');
                 const json = await response.json();
                 if (cancelled) return;
-                setData({
+                const normalized = {
                     ...json,
                     profile: { stats: [], ...(json.profile || {}) },
                     philosophy: json.philosophy || [],
@@ -96,7 +122,9 @@ export default function AdminPage() {
                     experiences: json.experiences || [],
                     stories: json.stories || [],
                     guestbook: json.guestbook || [],
-                });
+                };
+                setData(normalized);
+                setSavedSnapshot(JSON.stringify(normalized));
             } catch (error) {
                 console.error(error);
                 if (!cancelled) setMessage({ type: 'error', text: '데이터를 불러오지 못했습니다.' });
@@ -105,6 +133,18 @@ export default function AdminPage() {
 
         return () => { cancelled = true; };
     }, [isLoggedIn]);
+
+    const isDirty = Boolean(data && savedSnapshot && JSON.stringify(data) !== savedSnapshot);
+
+    useEffect(() => {
+        const warnBeforeLeaving = (event) => {
+            if (!isDirty) return;
+            event.preventDefault();
+            event.returnValue = '';
+        };
+        window.addEventListener('beforeunload', warnBeforeLeaving);
+        return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+    }, [isDirty]);
 
     const notify = (type, text) => {
         setMessage({ type, text });
@@ -120,6 +160,7 @@ export default function AdminPage() {
     };
 
     const handleLogout = async () => {
+        if (isDirty && !window.confirm('저장하지 않은 변경사항이 있습니다. 그래도 로그아웃할까요?')) return;
         await supabase.auth.signOut();
         setSession(null);
         setData(null);
@@ -142,7 +183,8 @@ export default function AdminPage() {
             const response = await authorizedFetch('/api/portfolio', { method: 'POST', body: JSON.stringify(data) });
             const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result.error || '저장에 실패했습니다.');
-            notify('ok', '저장했습니다.');
+            setSavedSnapshot(JSON.stringify(data));
+            notify('ok', '변경사항을 저장했습니다.');
         } catch (error) {
             notify('error', error.message);
         }
@@ -156,7 +198,21 @@ export default function AdminPage() {
             const response = await authorizedFetch('/api/setup/migrate', { method: 'POST' });
             const result = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(result.error || '초기화에 실패했습니다.');
-            notify('ok', '기본 데이터로 되돌렸습니다. 새로고침해주세요.');
+            const refreshed = await fetch('/api/portfolio');
+            if (!refreshed.ok) throw new Error('초기화 후 데이터를 다시 불러오지 못했습니다.');
+            const json = await refreshed.json();
+            const normalized = {
+                ...json,
+                profile: { stats: [], ...(json.profile || {}) },
+                philosophy: json.philosophy || [],
+                projects: json.projects || [],
+                experiences: json.experiences || [],
+                stories: json.stories || [],
+                guestbook: json.guestbook || [],
+            };
+            setData(normalized);
+            setSavedSnapshot(JSON.stringify(normalized));
+            notify('ok', '기본 데이터로 되돌렸습니다.');
         } catch (error) {
             notify('error', error.message);
         }
@@ -194,9 +250,23 @@ export default function AdminPage() {
             return list;
         });
 
+    const discardChanges = () => {
+        if (!isDirty || !window.confirm('저장하지 않은 변경사항을 모두 취소할까요?')) return;
+        setData(JSON.parse(savedSnapshot));
+        notify('ok', '저장 전 상태로 되돌렸습니다.');
+    };
+
+    const getSectionCount = (id) => {
+        if (id === 'stats') return stats.length;
+        if (['philosophy', 'projects', 'experiences', 'stories', 'guestbook'].includes(id)) return data[id].length;
+        return null;
+    };
+
     const goToSection = (id) => {
         setActiveSection(id);
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.requestAnimationFrame(() => {
+            document.querySelector('.admin-main')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
     };
 
     /* ── 화면 ──────────────────────────────────────── */
@@ -252,17 +322,30 @@ export default function AdminPage() {
                         <strong>포트폴리오 관리자</strong>
                     </div>
                     <div className="admin-actions">
-                        {message && (
-                            <span className={`admin-message admin-message--${message.type}`} role="status">{message.text}</span>
+                        <span className={`admin-save-state${isDirty ? ' is-dirty' : ''}`} aria-live="polite">
+                            {isDirty ? <><span className="admin-status-dot" /> 저장하지 않은 변경사항</> : <><Check size={15} /> 모두 저장됨</>}
+                        </span>
+                        <Link className="button button--secondary button--small" href="/" target="_blank" rel="noreferrer">
+                            <ExternalLink size={16} /> 사이트 보기
+                        </Link>
+                        {isDirty && (
+                            <button className="button button--ghost button--small" type="button" onClick={discardChanges} disabled={loading}>
+                                <Undo2 size={16} /> 변경 취소
+                            </button>
                         )}
-                        <Link className="button button--secondary button--small" href="/" target="_blank">미리보기</Link>
-                        <button className="button button--primary button--small" type="button" onClick={saveChanges} disabled={loading}>
-                            {loading ? '처리 중…' : '변경사항 저장'}
+                        <button className="button button--primary button--small" type="button" onClick={saveChanges} disabled={loading || !isDirty}>
+                            <Save size={16} /> {loading ? '저장 중…' : '저장하기'}
                         </button>
-                        <button className="button button--small" type="button" onClick={handleLogout}>로그아웃</button>
+                        <button className="admin-icon-button" type="button" onClick={handleLogout} title="로그아웃" aria-label="로그아웃"><LogOut size={18} /></button>
                     </div>
                 </div>
             </header>
+
+            {message && (
+                <div className={`admin-toast admin-toast--${message.type}`} role="status">
+                    {message.type === 'ok' && <Check size={17} />}{message.text}
+                </div>
+            )}
 
             <div className="admin-body">
                 <nav className="admin-nav" aria-label="관리 항목">
@@ -273,14 +356,24 @@ export default function AdminPage() {
                             key={section.id}
                             onClick={() => goToSection(section.id)}
                         >
-                            {section.label}
+                            <section.icon size={19} aria-hidden="true" />
+                            <span>
+                                <strong>{section.label}</strong>
+                                <small>{section.description}</small>
+                            </span>
+                            {getSectionCount(section.id) !== null && <b>{getSectionCount(section.id)}</b>}
                         </button>
                     ))}
                 </nav>
 
                 <main className="admin-main">
+                    <div className="admin-workspace-head">
+                        <span>사이트 내용 관리</span>
+                        <h1>{SECTIONS.find((section) => section.id === activeSection)?.label} 수정</h1>
+                        <p>여기에서 {SECTIONS.find((section) => section.id === activeSection)?.description} 내용을 수정합니다. 입력한 내용은 저장하기를 눌러야 사이트에 반영됩니다.</p>
+                    </div>
                     {/* 기본 정보 */}
-                    <section className="admin-card" id="profile">
+                    <section className={`admin-card${activeSection === 'profile' ? ' is-active' : ''}`} id="profile">
                         <div className="admin-card-head">
                             <div>
                                 <h2>기본 정보</h2>
@@ -319,7 +412,7 @@ export default function AdminPage() {
                     </section>
 
                     {/* 주요 지표 */}
-                    <section className="admin-card" id="stats">
+                    <section className={`admin-card${activeSection === 'stats' ? ' is-active' : ''}`} id="stats">
                         <div className="admin-card-head">
                             <div>
                                 <h2>주요 지표</h2>
@@ -327,13 +420,13 @@ export default function AdminPage() {
                             </div>
                             <button className="button button--soft button--small" type="button"
                                 onClick={() => mutateStats((list) => [...list, { label: '', value: '', unit: '' }])}>
-                                + 지표 추가
+                                <Plus size={16} /> 지표 추가
                             </button>
                         </div>
                         <div className="admin-list">
                             {stats.map((stat, index) => (
                                 <ItemCard
-                                    label="지표" key={index} index={index} total={stats.length}
+                                    label="지표" title={stat.label} key={index} index={index} total={stats.length}
                                     onMove={(i, delta) => mutateStats((list) => {
                                         const target = i + delta;
                                         if (target < 0 || target >= list.length) return list;
@@ -372,7 +465,7 @@ export default function AdminPage() {
                     </section>
 
                     {/* 일하는 원칙 */}
-                    <section className="admin-card" id="philosophy">
+                    <section className={`admin-card${activeSection === 'philosophy' ? ' is-active' : ''}`} id="philosophy">
                         <div className="admin-card-head">
                             <div>
                                 <h2>일하는 원칙</h2>
@@ -380,13 +473,13 @@ export default function AdminPage() {
                             </div>
                             <button className="button button--soft button--small" type="button"
                                 onClick={() => addItem('philosophy', { id: Date.now(), title: '', subtitle: '', desc: '' })}>
-                                + 원칙 추가
+                                <Plus size={16} /> 원칙 추가
                             </button>
                         </div>
                         <div className="admin-list">
                             {data.philosophy.map((item, index) => (
                                 <ItemCard
-                                    label="원칙" key={item.id || index} index={index} total={data.philosophy.length}
+                                    label="원칙" title={item.title} key={item.id || index} index={index} total={data.philosophy.length}
                                     onMove={(i, delta) => moveItem('philosophy', i, delta)}
                                     onRemove={(i) => removeItem('philosophy', i)}
                                 >
@@ -408,7 +501,7 @@ export default function AdminPage() {
                     </section>
 
                     {/* 프로젝트 */}
-                    <section className="admin-card" id="projects">
+                    <section className={`admin-card${activeSection === 'projects' ? ' is-active' : ''}`} id="projects">
                         <div className="admin-card-head">
                             <div>
                                 <h2>프로젝트</h2>
@@ -422,13 +515,13 @@ export default function AdminPage() {
                                     title: '', subtitle: '', summary: '', description: '',
                                     highlights: [], techStack: [], link: '#', badge: '', icon: PROJECT_ICON_NAMES[0],
                                 })}>
-                                + 프로젝트 추가
+                                <Plus size={16} /> 프로젝트 추가
                             </button>
                         </div>
                         <div className="admin-list">
                             {data.projects.map((project, index) => (
                                 <ItemCard
-                                    label="프로젝트" key={project.id || index} index={index} total={data.projects.length}
+                                    label="프로젝트" title={project.title} key={project.id || index} index={index} total={data.projects.length}
                                     onMove={(i, delta) => moveItem('projects', i, delta)}
                                     onRemove={(i) => removeItem('projects', i)}
                                 >
@@ -493,7 +586,7 @@ export default function AdminPage() {
                     </section>
 
                     {/* 경력 */}
-                    <section className="admin-card" id="experiences">
+                    <section className={`admin-card${activeSection === 'experiences' ? ' is-active' : ''}`} id="experiences">
                         <div className="admin-card-head">
                             <div>
                                 <h2>경력</h2>
@@ -501,13 +594,13 @@ export default function AdminPage() {
                             </div>
                             <button className="button button--soft button--small" type="button"
                                 onClick={() => addItem('experiences', { id: Date.now(), period: '', company: '', role: '', description: '', tags: [] })}>
-                                + 경력 추가
+                                <Plus size={16} /> 경력 추가
                             </button>
                         </div>
                         <div className="admin-list">
                             {data.experiences.map((experience, index) => (
                                 <ItemCard
-                                    label="경력" key={experience.id || index} index={index} total={data.experiences.length}
+                                    label="경력" title={experience.company || experience.role} key={experience.id || index} index={index} total={data.experiences.length}
                                     onMove={(i, delta) => moveItem('experiences', i, delta)}
                                     onRemove={(i) => removeItem('experiences', i)}
                                 >
@@ -535,7 +628,7 @@ export default function AdminPage() {
                     </section>
 
                     {/* 기록 */}
-                    <section className="admin-card" id="stories">
+                    <section className={`admin-card${activeSection === 'stories' ? ' is-active' : ''}`} id="stories">
                         <div className="admin-card-head">
                             <div>
                                 <h2>기록</h2>
@@ -543,13 +636,13 @@ export default function AdminPage() {
                             </div>
                             <button className="button button--soft button--small" type="button"
                                 onClick={() => addItem('stories', { id: Date.now(), tag: '', date: '', readTime: '3분', title: '', content: '', likes: 0, link: '' })}>
-                                + 기록 추가
+                                <Plus size={16} /> 기록 추가
                             </button>
                         </div>
                         <div className="admin-list">
                             {data.stories.map((story, index) => (
                                 <ItemCard
-                                    label="기록" key={story.id || index} index={index} total={data.stories.length}
+                                    label="기록" title={story.title} key={story.id || index} index={index} total={data.stories.length}
                                     onMove={(i, delta) => moveItem('stories', i, delta)}
                                     onRemove={(i) => removeItem('stories', i)}
                                 >
@@ -586,7 +679,7 @@ export default function AdminPage() {
                     </section>
 
                     {/* 방명록 */}
-                    <section className="admin-card" id="guestbook">
+                    <section className={`admin-card${activeSection === 'guestbook' ? ' is-active' : ''}`} id="guestbook">
                         <div className="admin-card-head">
                             <div>
                                 <h2>방명록</h2>
@@ -613,14 +706,14 @@ export default function AdminPage() {
                         </p>
                     </section>
 
-                    <section className="admin-card">
+                    <section className={`admin-card admin-danger-zone${activeSection === 'settings' ? ' is-active' : ''}`} id="settings">
                         <div className="admin-card-head">
                             <div>
                                 <h2>초기화</h2>
                                 <p>저장된 내용을 모두 지우고 코드에 들어 있는 기본 데이터로 되돌립니다.</p>
                             </div>
                             <button className="button button--secondary button--small" type="button" onClick={resetToBundled} disabled={loading}>
-                                기본 데이터로 되돌리기
+                                <RotateCcw size={16} /> 기본 데이터로 되돌리기
                             </button>
                         </div>
                         <p className="admin-note">되돌린 내용은 복구할 수 없으니 주의해주세요.</p>

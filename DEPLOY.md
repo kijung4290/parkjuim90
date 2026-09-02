@@ -27,6 +27,18 @@ Vercel is the creators of Next.js, so it works perfectly out of the box.
 
 Wait a minute, and your site will be live! Vercel will give you a domain like `social-worker-portfolio.vercel.app`.
 
+### HTTPS and the custom domain
+
+You do not need to buy or upload a separate SSL certificate when this site is deployed on Vercel. Vercel issues and renews a Let's Encrypt certificate automatically after the domain and DNS records are verified.
+
+1. Open the Vercel project and go to **Settings > Domains**.
+2. Add both `parkjuim90.cloud` and `www.parkjuim90.cloud`.
+3. In Gabia DNS management, enter the exact A/CNAME values shown by Vercel. The values displayed in the Vercel dashboard are authoritative because a project can receive a project-specific record.
+4. Set one domain as **Primary** and redirect the other one to it.
+5. Wait for the domain status to become **Valid Configuration**, then open the site with `https://`.
+
+Vercel provisions the certificate after DNS propagation, usually within a few minutes. If certificate issuance fails, check for an old `_acme-challenge` TXT record or a CAA record that does not allow `letsencrypt.org`.
+
 ---
 
 ## Option 2: Render
