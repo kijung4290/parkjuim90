@@ -1,28 +1,24 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { savePortfolioData } from '@/lib/data';
-import fs from 'fs';
-import path from 'path';
+import { getRequestUser } from '@/lib/supabaseServer';
+import initialPortfolioData from '@/data/portfolio.json';
 
-export async function GET() {
-    try {
-        const jsonPath = path.join(process.cwd(), 'data', 'portfolio.json');
-
-        if (!fs.existsSync(jsonPath)) {
-            return NextResponse.json({ error: 'data/portfolio.json not found. Nothing to migrate.' }, { status: 404 });
-        }
-
-        const fileContents = fs.readFileSync(jsonPath, 'utf8');
-        const jsonData = JSON.parse(fileContents);
-
-        const success = await savePortfolioData(jsonData);
-
-        if (success) {
-            return NextResponse.json({ message: 'Successfully migrated data from portfolio.json to Supabase!' });
-        } else {
-            return NextResponse.json({ error: 'Failed to save data to Supabase during migration.' }, { status: 500 });
-        }
-    } catch (error) {
-        console.error("Migration error:", error);
-        return NextResponse.json({ error: 'Migration failed: ' + error.message }, { status: 500 });
+/**
+ * data/portfolio.json의 내용을 Supabase에 그대로 덮어씁니다.
+ * 저장된 내용을 모두 지우는 작업이므로 로그인한 관리자만 호출할 수 있습니다.
+ */
+export async function POST(request) {
+    const user = await getRequestUser(request);
+    if (!user) {
+        return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
     }
+
+    const success = await savePortfolioData(initialPortfolioData);
+    if (!success) {
+        return NextResponse.json({ error: '초기 데이터 저장에 실패했습니다.' }, { status: 500 });
+    }
+
+    revalidatePath('/');
+    return NextResponse.json({ message: 'data/portfolio.json 내용을 Supabase에 반영했습니다.' });
 }

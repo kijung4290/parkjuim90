@@ -1,54 +1,55 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  Activity,
-  ArrowRight,
-  Bot,
-  BookOpen,
-  CheckCircle2,
-  FolderHeart,
-  LayoutGrid,
-  Network,
-  Search,
-  ShieldAlert,
-  Sparkles,
-  Users,
-  X,
-} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowRight, CheckCircle2, ExternalLink, Search, X } from 'lucide-react';
+import { ProjectIcon } from '@/components/projectIcons';
+import { PROJECT_CATEGORIES } from '@/lib/projectMeta';
 
-const iconMap = {
-  Network,
-  FolderHeart,
-  Activity,
-  Users,
-  BookOpen,
-  LayoutGrid,
-  Bot,
-  ShieldAlert,
-};
+const CATEGORIES = [{ id: 'all', label: '전체' }, ...PROJECT_CATEGORIES];
+
+const FOCUSABLE = 'a[href], button:not(:disabled), input, textarea, [tabindex]:not([tabindex="-1"])';
+
+const hasExternalLink = (project) => Boolean(project?.link) && project.link !== '#';
 
 export default function ArchiveSection({ projects = [] }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
+  const modalRef = useRef(null);
 
-  const categories = [
-    { id: 'all', label: '전체' },
-    { id: 'social', label: '사회복지 실무' },
-    { id: 'ai', label: 'AI & 챗봇' },
-    { id: 'community', label: '커뮤니티 & 돌봄' },
-    { id: 'automation', label: '행정 자동화' },
-    { id: 'smartwork', label: '스마트워크 & 교육' },
-  ];
-
+  // 모달을 열면 포커스를 안으로 가두고, 닫으면 원래 자리로 되돌립니다.
   useEffect(() => {
     if (!selectedProject) return undefined;
-    const closeWithEscape = (event) => {
-      if (event.key === 'Escape') setSelectedProject(null);
+
+    const previouslyFocused = document.activeElement;
+    modalRef.current?.querySelector(FOCUSABLE)?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setSelectedProject(null);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = Array.from(modalRef.current?.querySelectorAll(FOCUSABLE) || []);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener('keydown', closeWithEscape);
-    return () => window.removeEventListener('keydown', closeWithEscape);
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus?.();
+    };
   }, [selectedProject]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -61,11 +62,6 @@ export default function ArchiveSection({ projects = [] }) {
     return matchesCategory && searchableText.includes(normalizedQuery);
   });
 
-  const renderIcon = (iconName, size = 23) => {
-    const Icon = iconMap[iconName] || Sparkles;
-    return <Icon size={size} strokeWidth={1.8} aria-hidden="true" />;
-  };
-
   return (
     <section className="section section--white" id="archive" aria-labelledby="archive-title">
       <div className="container">
@@ -77,7 +73,7 @@ export default function ArchiveSection({ projects = [] }) {
 
         <div className="archive-toolbar">
           <div className="filter-tabs" role="group" aria-label="프로젝트 카테고리">
-            {categories.map((category) => (
+            {CATEGORIES.map((category) => (
               <button
                 className={`filter-button${activeCategory === category.id ? ' is-active' : ''}`}
                 type="button"
@@ -102,36 +98,36 @@ export default function ArchiveSection({ projects = [] }) {
           </label>
         </div>
 
-        <div className="project-grid" aria-live="polite">
+        {/* 목록 전체가 아니라 결과 개수만 읽어주도록 합니다. */}
+        <p className="sr-only" role="status">{filteredProjects.length}개의 프로젝트가 있습니다.</p>
+
+        <div className="project-grid">
           {filteredProjects.map((project) => {
-            const isFeatured = project.id === 'genogram' || project.badge?.includes('★');
+            const isFeatured = project.featured ?? Boolean(project.badge?.includes('★'));
             return (
-              <article
-                className={`project-card${isFeatured ? ' project-card--featured' : ''}`}
-                key={project.id}
-              >
-                <span className="project-top">
-                  <span className="icon-box">{renderIcon(project.icon)}</span>
+              <article className={`project-card${isFeatured ? ' project-card--featured' : ''}`} key={project.id}>
+                <div className="project-top">
+                  <span className="icon-box"><ProjectIcon name={project.icon} /></span>
                   {project.badge && <span className="project-badge">{project.badge}</span>}
-                </span>
+                </div>
 
-                <span className="project-category">{project.categoryLabel}</span>
+                <p className="project-category">{project.categoryLabel}</p>
                 <h3>{project.title}</h3>
-                <span className="project-summary">{project.summary}</span>
+                <p className="project-summary">{project.summary}</p>
 
-                <span className="highlight-list">
+                <ul className="highlight-list">
                   {project.highlights?.slice(0, 2).map((highlight) => (
-                    <span className="highlight" key={highlight}>
+                    <li className="highlight" key={highlight}>
                       <CheckCircle2 size={14} aria-hidden="true" />
                       <span>{highlight}</span>
-                    </span>
+                    </li>
                   ))}
-                </span>
+                </ul>
 
-                <span className="project-bottom">
-                  <span className="tag-row">
+                <div className="project-bottom">
+                  <div className="tag-row">
                     {project.techStack?.map((tech) => <span className="tag" key={tech}>{tech}</span>)}
-                  </span>
+                  </div>
                   <button
                     className="project-action"
                     type="button"
@@ -140,13 +136,13 @@ export default function ArchiveSection({ projects = [] }) {
                   >
                     프로젝트 살펴보기 <ArrowRight size={16} aria-hidden="true" />
                   </button>
-                </span>
+                </div>
               </article>
             );
           })}
 
           {filteredProjects.length === 0 && (
-            <div className="empty-state">조건에 맞는 프로젝트가 없습니다. 검색어 또는 카테고리를 바꿔보세요.</div>
+            <p className="empty-state">조건에 맞는 프로젝트가 없습니다. 검색어 또는 카테고리를 바꿔보세요.</p>
           )}
         </div>
       </div>
@@ -158,6 +154,7 @@ export default function ArchiveSection({ projects = [] }) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="project-modal-title"
+            ref={modalRef}
             onMouseDown={(event) => event.stopPropagation()}
           >
             <button className="modal-close" type="button" aria-label="프로젝트 상세 닫기" onClick={() => setSelectedProject(null)}>
@@ -165,7 +162,7 @@ export default function ArchiveSection({ projects = [] }) {
             </button>
 
             <div className="modal-intro">
-              <span className="icon-box">{renderIcon(selectedProject.icon, 22)}</span>
+              <span className="icon-box"><ProjectIcon name={selectedProject.icon} size={22} /></span>
               <div>
                 <div className="modal-kicker">{selectedProject.categoryLabel}</div>
                 <div className="modal-subtitle">{selectedProject.subtitle}</div>
@@ -175,27 +172,42 @@ export default function ArchiveSection({ projects = [] }) {
             <h2 id="project-modal-title">{selectedProject.title}</h2>
             <p className="modal-description">{selectedProject.description}</p>
 
-            <section className="modal-section" aria-labelledby="feature-title">
-              <h3 id="feature-title">주요 기능과 특징</h3>
-              <div className="highlight-list">
-                {selectedProject.highlights?.map((item) => (
-                  <div className="highlight" key={item}>
-                    <CheckCircle2 size={15} aria-hidden="true" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
+            {selectedProject.highlights?.length > 0 && (
+              <section className="modal-section" aria-labelledby="feature-title">
+                <h3 id="feature-title">주요 기능과 특징</h3>
+                <ul className="highlight-list">
+                  {selectedProject.highlights.map((item) => (
+                    <li className="highlight" key={item}>
+                      <CheckCircle2 size={15} aria-hidden="true" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-            <section className="modal-section" aria-labelledby="stack-title">
-              <h3 id="stack-title">기술 스택</h3>
-              <div className="tag-row">
-                {selectedProject.techStack?.map((tech) => <span className="tag" key={tech}>{tech}</span>)}
-              </div>
-            </section>
+            {selectedProject.techStack?.length > 0 && (
+              <section className="modal-section" aria-labelledby="stack-title">
+                <h3 id="stack-title">기술 스택</h3>
+                <div className="tag-row">
+                  {selectedProject.techStack.map((tech) => <span className="tag" key={tech}>{tech}</span>)}
+                </div>
+              </section>
+            )}
 
             <div className="modal-actions">
-              <button className="button button--secondary" type="button" onClick={() => setSelectedProject(null)}>닫기</button>
+              {hasExternalLink(selectedProject) ? (
+                <a
+                  className="button button--secondary"
+                  href={selectedProject.link}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  사이트 열기 <ExternalLink size={15} aria-hidden="true" />
+                </a>
+              ) : (
+                <button className="button button--secondary" type="button" onClick={() => setSelectedProject(null)}>닫기</button>
+              )}
               <a className="button button--primary" href="#contact" onClick={() => setSelectedProject(null)}>도입 및 협업 문의</a>
             </div>
           </article>

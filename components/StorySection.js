@@ -4,14 +4,18 @@ import { useState } from 'react';
 import { ArrowRight, Clock, Heart } from 'lucide-react';
 
 export default function StorySection({ stories = [] }) {
-  const [likes, setLikes] = useState({});
+  const [likedIds, setLikedIds] = useState(() => new Set());
 
-  const handleLike = (id, currentLikes) => {
-    setLikes((previous) => ({
-      ...previous,
-      [id]: (previous[id] ?? currentLikes) + 1,
-    }));
+  const toggleLike = (id) => {
+    setLikedIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
+
+  if (stories.length === 0) return null;
 
   return (
     <section className="section section--white" id="stories" aria-labelledby="stories-title">
@@ -24,13 +28,15 @@ export default function StorySection({ stories = [] }) {
 
         <div className="story-grid">
           {stories.map((story) => {
-            const liked = likes[story.id] !== undefined;
-            const likeCount = liked ? likes[story.id] : story.likes;
+            const liked = likedIds.has(story.id);
+            const likeCount = (story.likes || 0) + (liked ? 1 : 0);
             return (
               <article className="story-card" key={story.id}>
                 <div className="story-meta">
                   <span className="story-tag">{story.tag}</span>
-                  <span className="story-date"><Clock size={12} aria-hidden="true" /> {story.readTime} 읽기 · {story.date}</span>
+                  <span className="story-date">
+                    <Clock size={12} aria-hidden="true" /> {story.readTime} 읽기 · {story.date}
+                  </span>
                 </div>
                 <h3>{story.title}</h3>
                 <p>{story.content}</p>
@@ -40,12 +46,17 @@ export default function StorySection({ stories = [] }) {
                     type="button"
                     aria-label={`${story.title} 공감 ${likeCount}개`}
                     aria-pressed={liked}
-                    onClick={() => handleLike(story.id, story.likes)}
+                    onClick={() => toggleLike(story.id)}
                   >
                     <Heart size={14} fill={liked ? 'currentColor' : 'none'} aria-hidden="true" />
                     {likeCount}
                   </button>
-                  <span className="read-label">기록 읽기 <ArrowRight size={14} aria-hidden="true" /></span>
+                  {/* 링크가 있을 때만 '읽기'를 노출합니다(눌리지 않는 안내는 혼란만 줍니다). */}
+                  {story.link && (
+                    <a className="read-label" href={story.link} target="_blank" rel="noreferrer">
+                      기록 읽기 <ArrowRight size={14} aria-hidden="true" />
+                    </a>
+                  )}
                 </div>
               </article>
             );

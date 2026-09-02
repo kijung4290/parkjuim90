@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { NAV_LINKS } from '@/lib/navigation';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 18);
@@ -15,15 +17,49 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { label: '일하는 원칙', href: '#philosophy' },
-    { label: '만든 도구', href: '#archive' },
-    { label: '경력', href: '#experience' },
-    { label: '기록', href: '#stories' },
-    { label: '방명록', href: '#guestbook' },
-  ];
+  // 화면 가운데에 걸린 섹션을 현재 위치로 표시합니다.
+  useEffect(() => {
+    const sections = NAV_LINKS.map((link) => document.getElementById(link.id)).filter(Boolean);
+    if (sections.length === 0) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) setActiveSection(visible.target.id);
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  // 모바일 메뉴는 Esc로도 닫히게 합니다.
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+    const closeWithEscape = (event) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', closeWithEscape);
+    return () => window.removeEventListener('keydown', closeWithEscape);
+  }, [mobileMenuOpen]);
 
   const closeMenu = () => setMobileMenuOpen(false);
+
+  const renderLinks = (onClick) =>
+    NAV_LINKS.map((link) => (
+      <a
+        className={`nav-link${activeSection === link.id ? ' is-active' : ''}`}
+        href={`#${link.id}`}
+        key={link.id}
+        aria-current={activeSection === link.id ? 'true' : undefined}
+        onClick={onClick}
+      >
+        {link.label}
+      </a>
+    ));
 
   return (
     <nav className={`site-nav${scrolled ? ' is-scrolled' : ''}`} aria-label="주요 메뉴">
@@ -37,11 +73,7 @@ export default function Navbar() {
         </Link>
 
         <div className="desktop-nav">
-          <div className="nav-links">
-            {navLinks.map((link) => (
-              <a className="nav-link" href={link.href} key={link.href}>{link.label}</a>
-            ))}
-          </div>
+          <div className="nav-links">{renderLinks()}</div>
           <a className="button button--primary button--small" href="#contact">
             협업 문의 <ArrowUpRight size={15} aria-hidden="true" />
           </a>
@@ -61,9 +93,7 @@ export default function Navbar() {
 
       {mobileMenuOpen && (
         <div className="mobile-nav" id="mobile-navigation">
-          {navLinks.map((link) => (
-            <a className="nav-link" href={link.href} key={link.href} onClick={closeMenu}>{link.label}</a>
-          ))}
+          {renderLinks(closeMenu)}
           <a className="button button--primary" href="#contact" onClick={closeMenu}>
             협업 문의 <ArrowUpRight size={16} aria-hidden="true" />
           </a>

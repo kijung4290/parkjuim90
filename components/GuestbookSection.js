@@ -1,36 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle2, Send } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Send } from 'lucide-react';
+
+const EMOJIS = ['💬', '💙', '🚀', '✨', '🔥', '👏', '💡', '🍀'];
+const MAX_MESSAGE = 300;
 
 export default function GuestbookSection({ initialGuestbook = [] }) {
   const [guestbook, setGuestbook] = useState(initialGuestbook);
   const [author, setAuthor] = useState('');
   const [message, setMessage] = useState('');
-  const [selectedEmoji, setSelectedEmoji] = useState('💬');
+  const [selectedEmoji, setSelectedEmoji] = useState(EMOJIS[0]);
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-
-  const emojis = ['💬', '💙', '🚀', '✨', '🔥', '👏', '💡', '🍀'];
-
-  const addLocalEntry = () => {
-    const now = new Date();
-    const entry = {
-      id: Date.now(),
-      author: author.trim(),
-      emoji: selectedEmoji,
-      message: message.trim(),
-      date: `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`,
-    };
-    setGuestbook((previous) => [entry, ...previous]);
-  };
+  const [status, setStatus] = useState(null); // { type: 'success' | 'error', text }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!author.trim() || !message.trim()) return;
+    if (!author.trim() || !message.trim() || loading) return;
 
     setLoading(true);
-    setSuccessMessage('');
+    setStatus(null);
 
     try {
       const response = await fetch('/api/guestbook', {
@@ -39,19 +28,21 @@ export default function GuestbookSection({ initialGuestbook = [] }) {
         body: JSON.stringify({ author: author.trim(), emoji: selectedEmoji, message: message.trim() }),
       });
 
-      if (!response.ok) throw new Error('Guestbook request failed');
-      const result = await response.json();
-      if (result.entry) setGuestbook((previous) => [result.entry, ...previous]);
-      else addLocalEntry();
-    } catch (error) {
-      console.error(error);
-      addLocalEntry();
-    } finally {
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.entry) {
+        throw new Error(result.error || '등록에 실패했습니다.');
+      }
+
+      setGuestbook((previous) => [result.entry, ...previous]);
       setAuthor('');
       setMessage('');
-      setSuccessMessage('응원 메시지가 등록되었습니다. 고맙습니다!');
+      setStatus({ type: 'success', text: '응원 메시지가 등록되었습니다. 고맙습니다!' });
+    } catch (error) {
+      // 저장에 실패했는데 성공한 것처럼 보이면 안 되므로, 입력값은 그대로 두고 알립니다.
+      console.error(error);
+      setStatus({ type: 'error', text: `${error.message} 잠시 후 다시 시도해주세요.` });
+    } finally {
       setLoading(false);
-      window.setTimeout(() => setSuccessMessage(''), 4000);
     }
   };
 
@@ -68,17 +59,19 @@ export default function GuestbookSection({ initialGuestbook = [] }) {
           <div className="guestbook-form">
             <h3>방명록 작성</h3>
 
-            {successMessage && (
-              <div className="success-message" role="status">
-                <CheckCircle2 size={17} aria-hidden="true" />
-                <span>{successMessage}</span>
+            {status && (
+              <div className={`form-status${status.type === 'error' ? ' form-status--error' : ''}`} role="status">
+                {status.type === 'error'
+                  ? <AlertCircle size={17} aria-hidden="true" />
+                  : <CheckCircle2 size={17} aria-hidden="true" />}
+                <span>{status.text}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit}>
               <span className="emoji-label" id="emoji-label">마음을 골라주세요</span>
               <div className="emoji-group" role="group" aria-labelledby="emoji-label">
-                {emojis.map((emoji) => (
+                {EMOJIS.map((emoji) => (
                   <button
                     className={`emoji-button${selectedEmoji === emoji ? ' is-selected' : ''}`}
                     type="button"
@@ -100,19 +93,22 @@ export default function GuestbookSection({ initialGuestbook = [] }) {
                   placeholder="예: 동료 사회복지사"
                   value={author}
                   onChange={(event) => setAuthor(event.target.value)}
-                  maxLength={40}
+                  maxLength={30}
                   required
                 />
               </div>
 
               <div className="form-field">
-                <label htmlFor="guestbook-message">메시지</label>
+                <div className="form-field-head">
+                  <label htmlFor="guestbook-message">메시지</label>
+                  <span className="form-counter">{message.length} / {MAX_MESSAGE}</span>
+                </div>
                 <textarea
                   id="guestbook-message"
                   placeholder="응원이나 의견을 자유롭게 남겨주세요."
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
-                  maxLength={300}
+                  maxLength={MAX_MESSAGE}
                   rows={4}
                   required
                 />
@@ -140,7 +136,7 @@ export default function GuestbookSection({ initialGuestbook = [] }) {
             ))}
 
             {guestbook.length === 0 && (
-              <div className="empty-state">아직 메시지가 없습니다. 첫 번째 인사를 남겨주세요.</div>
+              <p className="empty-state">아직 메시지가 없습니다. 첫 번째 인사를 남겨주세요.</p>
             )}
           </div>
         </div>

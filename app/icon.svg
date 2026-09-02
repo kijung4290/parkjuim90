@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="박주임 포트폴리오">
+  <rect width="64" height="64" rx="16" fill="#17483b" />
+  <text
+    x="32"
+    y="43"
+    fill="#ffffff"
+    font-family="Consolas, 'SFMono-Regular', ui-monospace, monospace"
+    font-size="30"
+    font-weight="700"
+    letter-spacing="-2"
+    text-anchor="middle"
+  >PJ</text>
+  <circle cx="50" cy="16" r="5" fill="#e98c5b" />
+</svg>

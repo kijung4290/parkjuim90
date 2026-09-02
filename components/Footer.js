@@ -1,4 +1,4 @@
-'use client';
+import { FOOTER_LINKS } from '@/lib/navigation';
 
 export default function Footer({ profile }) {
   return (
@@ -17,12 +17,9 @@ export default function Footer({ profile }) {
           </div>
 
           <nav className="footer-links" aria-label="하단 메뉴">
-            <a href="#philosophy">일하는 원칙</a>
-            <a href="#archive">만든 도구</a>
-            <a href="#experience">경력</a>
-            <a href="#stories">기록</a>
-            <a href="#guestbook">방명록</a>
-            <a href="#contact">문의</a>
+            {FOOTER_LINKS.map((link) => (
+              <a href={`#${link.id}`} key={link.id}>{link.label}</a>
+            ))}
           </nav>
         </div>
 

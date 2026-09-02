@@ -1,6 +1,6 @@
-'use client';
-
 export default function ExperienceSection({ experiences = [] }) {
+  if (experiences.length === 0) return null;
+
   return (
     <section className="section section--soft" id="experience" aria-labelledby="experience-title">
       <div className="container experience-layout">

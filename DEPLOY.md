@@ -14,11 +14,15 @@ Vercel is the creators of Next.js, so it works perfectly out of the box.
 3.  Click **"Add New..."** -> **"Project"**.
 4.  Select your `social-worker-portfolio` repository and click **"Import"**.
 5.  In the "Configure Project" screen, look for **"Environment Variables"**.
-6.  Add the following two variables (copy them from your `.env.local` or Supabase):
+6.  Add the following variables (copy them from your `.env.local` or Supabase):
     *   **Key:** `NEXT_PUBLIC_SUPABASE_URL`
         **Value:** `https://your-project-id.supabase.co` (Your actual URL)
     *   **Key:** `NEXT_PUBLIC_SUPABASE_ANON_KEY`
         **Value:** `eyJh...` (Your actual key)
+    *   **Key:** `SUPABASE_SERVICE_ROLE_KEY`
+        **Value:** the `service_role` key from Project Settings > API.
+        Server-side writes use this key, so the public `anon` key can stay read-only.
+        **Never** rename it with a `NEXT_PUBLIC_` prefix — that would expose it to every visitor.
 7.  Click **"Deploy"**.
 
 Wait a minute, and your site will be live! Vercel will give you a domain like `social-worker-portfolio.vercel.app`.
@@ -40,7 +44,8 @@ Render is a great alternative if you prefer it.
 6.  Scroll down to **"Environment Variables"** section.
 7.  Add the variables:
     *   `NEXT_PUBLIC_SUPABASE_URL` = Your URL
-    *   `NEXT_PUBLIC_SUPABASE_ANON_KEY` = Your Key
+    *   `NEXT_PUBLIC_SUPABASE_ANON_KEY` = Your anon key
+    *   `SUPABASE_SERVICE_ROLE_KEY` = Your service_role key (server-side only)
 8.  Click **"Create Web Service"**.
 
 Render might take a few minutes to build and deploy.

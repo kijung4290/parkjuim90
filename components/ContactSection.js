@@ -5,12 +5,17 @@ import { Check, Copy, Globe2, Mail, MapPin } from 'lucide-react';
 
 export default function ContactSection({ profile }) {
   const [copied, setCopied] = useState(false);
-  const email = profile?.email || 'parkjuim90@gmail.com';
+  const email = profile?.email;
 
   const copyEmail = async () => {
-    await navigator.clipboard.writeText(email);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // http 환경이나 권한 거부로 복사가 막히면 메일 앱을 대신 엽니다.
+      window.location.href = `mailto:${email}`;
+    }
   };
 
   return (
@@ -28,10 +33,10 @@ export default function ContactSection({ profile }) {
               <span className="contact-icon"><Mail size={18} aria-hidden="true" /></span>
               <span>
                 <span className="contact-label">이메일</span>
-                <span className="contact-value">{email}</span>
+                <a className="contact-value contact-value--link" href={`mailto:${email}`}>{email}</a>
               </span>
-              <button className="contact-action" type="button" onClick={copyEmail}>
-                {copied ? <><Check size={12} /> 복사됨</> : <><Copy size={12} /> 복사</>}
+              <button className="contact-action" type="button" onClick={copyEmail} aria-live="polite">
+                {copied ? <><Check size={12} aria-hidden="true" /> 복사됨</> : <><Copy size={12} aria-hidden="true" /> 복사</>}
               </button>
             </div>
 
@@ -39,19 +44,21 @@ export default function ContactSection({ profile }) {
               <span className="contact-icon"><MapPin size={18} aria-hidden="true" /></span>
               <span>
                 <span className="contact-label">활동 지역</span>
-                <span className="contact-value">{profile?.location || '강원특별자치도 원주시'}</span>
+                <span className="contact-value">{profile?.location}</span>
               </span>
               <span className="contact-action">지역사회 기반</span>
             </div>
 
-            <div className="contact-item">
-              <span className="contact-icon"><Globe2 size={18} aria-hidden="true" /></span>
-              <span>
-                <span className="contact-label">블로그</span>
-                <span className="contact-value">사회복지 DX & 실무 기록</span>
-              </span>
-              <a className="contact-action" href={profile?.blog || 'https://blog.naver.com'} target="_blank" rel="noreferrer">방문하기 ↗</a>
-            </div>
+            {profile?.blog && (
+              <div className="contact-item">
+                <span className="contact-icon"><Globe2 size={18} aria-hidden="true" /></span>
+                <span>
+                  <span className="contact-label">블로그</span>
+                  <span className="contact-value">사회복지 DX & 실무 기록</span>
+                </span>
+                <a className="contact-action" href={profile.blog} target="_blank" rel="noreferrer">방문하기 ↗</a>
+              </div>
+            )}
           </div>
         </div>
       </div>

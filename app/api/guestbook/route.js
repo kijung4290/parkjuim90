@@ -1,39 +1,49 @@
 import { NextResponse } from 'next/server';
-import { getPortfolioData, savePortfolioData } from '@/lib/data';
+import { revalidatePath } from 'next/cache';
+import { readPortfolio, savePortfolioData } from '@/lib/data';
+
+const MAX_AUTHOR = 30;
+const MAX_MESSAGE = 300;
+
+const formatDate = (date) =>
+    `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
 
 export async function POST(request) {
     try {
-        const body = await request.json();
-        const { author, emoji, message } = body;
+        const { author, emoji, message } = await request.json();
 
-        if (!author || !message) {
-            return NextResponse.json({ error: 'Author and message are required' }, { status: 400 });
+        if (typeof author !== 'string' || typeof message !== 'string' || !author.trim() || !message.trim()) {
+            return NextResponse.json({ error: '이름과 메시지를 모두 입력해주세요.' }, { status: 400 });
         }
 
-        const data = await getPortfolioData();
-        const guestbook = data.guestbook || [];
+        const { content, readable } = await readPortfolio();
 
-        const now = new Date();
-        const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+        // DB를 못 읽은 상태에서 저장하면 번들 JSON이 실제 데이터를 덮어씁니다.
+        if (!readable) {
+            return NextResponse.json({ error: '지금은 저장할 수 없습니다. 잠시 후 다시 시도해주세요.' }, { status: 503 });
+        }
 
-        const newEntry = {
+        const entry = {
             id: Date.now(),
-            author: author.trim().slice(0, 30),
-            emoji: emoji || '💬',
-            message: message.trim().slice(0, 300),
-            date: dateStr
+            author: author.trim().slice(0, MAX_AUTHOR),
+            emoji: typeof emoji === 'string' && emoji ? emoji.slice(0, 4) : '💬',
+            message: message.trim().slice(0, MAX_MESSAGE),
+            date: formatDate(new Date()),
         };
 
-        const updatedData = {
-            ...data,
-            guestbook: [newEntry, ...guestbook]
-        };
+        const success = await savePortfolioData({
+            ...content,
+            guestbook: [entry, ...(content.guestbook || [])],
+        });
 
-        await savePortfolioData(updatedData);
+        if (!success) {
+            return NextResponse.json({ error: '저장에 실패했습니다.' }, { status: 500 });
+        }
 
-        return NextResponse.json({ success: true, entry: newEntry });
+        revalidatePath('/');
+        return NextResponse.json({ success: true, entry });
     } catch (error) {
-        console.error("Guestbook error:", error);
-        return NextResponse.json({ error: 'Failed to add guestbook entry' }, { status: 500 });
+        console.error('방명록 오류:', error);
+        return NextResponse.json({ error: '메시지를 등록하지 못했습니다.' }, { status: 500 });
     }
 }

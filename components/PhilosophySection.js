@@ -1,9 +1,9 @@
-'use client';
-
 import { Accessibility, HeartHandshake, Share2, Wrench } from 'lucide-react';
 
+const ICONS = [HeartHandshake, Wrench, Accessibility, Share2];
+
 export default function PhilosophySection({ philosophy = [] }) {
-  const icons = [HeartHandshake, Wrench, Accessibility, Share2];
+  if (philosophy.length === 0) return null;
 
   return (
     <section className="section section--sage" id="philosophy" aria-labelledby="philosophy-title">
@@ -16,7 +16,7 @@ export default function PhilosophySection({ philosophy = [] }) {
 
         <div className="principle-grid">
           {philosophy.map((item, index) => {
-            const Icon = icons[index % icons.length];
+            const Icon = ICONS[index % ICONS.length];
             return (
               <article className="principle" key={item.id || item.title}>
                 <Icon className="principle-icon" size={30} strokeWidth={1.7} aria-hidden="true" />

@@ -1,38 +1,121 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { PROJECT_CATEGORIES, getCategoryLabel } from '@/lib/projectMeta';
+import { PROJECT_ICON_NAMES } from '@/components/projectIcons';
+import './admin.css';
+
+const SECTIONS = [
+    { id: 'profile', label: '기본 정보' },
+    { id: 'stats', label: '주요 지표' },
+    { id: 'philosophy', label: '일하는 원칙' },
+    { id: 'projects', label: '프로젝트' },
+    { id: 'experiences', label: '경력' },
+    { id: 'stories', label: '기록' },
+    { id: 'guestbook', label: '방명록' },
+];
+
+const toLines = (value) => (Array.isArray(value) ? value.join('\n') : '');
+const fromLines = (text) => text.split('\n').map((line) => line.trim()).filter(Boolean);
+
+/** 라벨과 입력칸을 함께 묶어주는 작은 헬퍼입니다. */
+function Field({ label, hint, wide = false, children }) {
+    return (
+        <label className={`admin-field${wide ? ' admin-span-all' : ''}`}>
+            <span>{label}{hint && <em>{hint}</em>}</span>
+            {children}
+        </label>
+    );
+}
+
+/** 반복 항목 하나를 감싸며 순서 이동·삭제 버튼을 제공합니다. */
+function ItemCard({ label, index, total, onMove, onRemove, children }) {
+    return (
+        <div className="admin-item">
+            <div className="admin-item-head">
+                <span className="admin-item-label">{label} {index + 1}</span>
+                <div className="admin-item-tools">
+                    <button type="button" aria-label="위로 이동" disabled={index === 0} onClick={() => onMove(index, -1)}>↑</button>
+                    <button type="button" aria-label="아래로 이동" disabled={index === total - 1} onClick={() => onMove(index, 1)}>↓</button>
+                    <button type="button" className="is-danger" onClick={() => onRemove(index)}>삭제</button>
+                </div>
+            </div>
+            {children}
+        </div>
+    );
+}
 
 export default function AdminPage() {
     const [session, setSession] = useState(null);
+    const [authChecked, setAuthChecked] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [activeSection, setActiveSection] = useState('basic');
 
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState(null); // { type: 'ok' | 'error', text }
+    const [activeSection, setActiveSection] = useState('profile');
+
+    const isLoggedIn = Boolean(session);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            if (session) fetchData();
+        supabase.auth.getSession().then(({ data: { session: current } }) => {
+            setSession(current);
+            setAuthChecked(true);
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            if (session && !data) fetchData();
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, current) => {
+            setSession(current);
+            setAuthChecked(true);
         });
 
         return () => subscription.unsubscribe();
     }, []);
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+    // 로그인 상태가 되면 저장된 내용을 불러옵니다.
+    useEffect(() => {
+        if (!isLoggedIn) {
+            setData(null);
+            return undefined;
+        }
+
+        let cancelled = false;
+        (async () => {
+            try {
+                const response = await fetch('/api/portfolio');
+                if (!response.ok) throw new Error('불러오기 실패');
+                const json = await response.json();
+                if (cancelled) return;
+                setData({
+                    ...json,
+                    profile: { stats: [], ...(json.profile || {}) },
+                    philosophy: json.philosophy || [],
+                    projects: json.projects || [],
+                    experiences: json.experiences || [],
+                    stories: json.stories || [],
+                    guestbook: json.guestbook || [],
+                });
+            } catch (error) {
+                console.error(error);
+                if (!cancelled) setMessage({ type: 'error', text: '데이터를 불러오지 못했습니다.' });
+            }
+        })();
+
+        return () => { cancelled = true; };
+    }, [isLoggedIn]);
+
+    const notify = (type, text) => {
+        setMessage({ type, text });
+        if (type === 'ok') window.setTimeout(() => setMessage(null), 3000);
+    };
+
+    const handleLogin = async (event) => {
+        event.preventDefault();
         setLoading(true);
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) alert('로그인 실패: ' + error.message);
+        if (error) notify('error', `로그인 실패: ${error.message}`);
         setLoading(false);
     };
 
@@ -42,350 +125,506 @@ export default function AdminPage() {
         setData(null);
     };
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/portfolio');
-            if (res.ok) {
-                const json = await res.json();
-                setData({
-                    name: json.name || "",
-                    role: json.role || "",
-                    introduction: json.introduction || "",
-                    profileImage: json.profileImage || "",
-                    contact: json.contact || {},
-                    experiences: json.experiences || [],
-                    projects: json.projects || [],
-                    education: json.education || [],
-                    skills: json.skills || [],
-                    otherSkills: json.otherSkills || []
-                });
-            } else {
-                setData({
-                    name: "", role: "", introduction: "", profileImage: "", contact: {},
-                    experiences: [], projects: [], education: [], skills: [], otherSkills: []
-                });
-            }
-        } catch (err) {
-            console.error(err);
-            alert('데이터를 불러오는데 실패했습니다.');
-        }
-        setLoading(false);
+    /** 저장·초기화 요청에는 로그인 토큰을 함께 보냅니다. */
+    const authorizedFetch = async (url, options = {}) => {
+        const { data: { session: current } } = await supabase.auth.getSession();
+        if (!current?.access_token) throw new Error('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        return fetch(url, {
+            ...options,
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${current.access_token}`, ...options.headers },
+        });
     };
 
     const saveChanges = async () => {
         setLoading(true);
-        setMessage('');
+        setMessage(null);
         try {
-            const res = await fetch('/api/portfolio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            if (res.ok) {
-                setMessage('✅ 저장 완료');
-                setTimeout(() => setMessage(''), 3000);
-            } else {
-                setMessage('❌ 저장 실패');
-            }
-        } catch (err) {
-            console.error(err);
-            setMessage('❌ 오류 발생');
+            const response = await authorizedFetch('/api/portfolio', { method: 'POST', body: JSON.stringify(data) });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.error || '저장에 실패했습니다.');
+            notify('ok', '저장했습니다.');
+        } catch (error) {
+            notify('error', error.message);
         }
         setLoading(false);
     };
 
-    /* Data Handlers */
-    const handleBasicChange = (e) => {
-        const { name, value } = e.target;
-        setData(prev => ({ ...prev, [name]: value }));
+    const resetToBundled = async () => {
+        if (!window.confirm('저장된 내용을 지우고 data/portfolio.json의 기본값으로 되돌립니다. 계속할까요?')) return;
+        setLoading(true);
+        try {
+            const response = await authorizedFetch('/api/setup/migrate', { method: 'POST' });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.error || '초기화에 실패했습니다.');
+            notify('ok', '기본 데이터로 되돌렸습니다. 새로고침해주세요.');
+        } catch (error) {
+            notify('error', error.message);
+        }
+        setLoading(false);
     };
 
-    const handleContactChange = (e) => {
-        const { name, value } = e.target;
-        setData(prev => ({ ...prev, contact: { ...prev.contact, [name]: value } }));
-    };
+    /* ── 데이터 수정 헬퍼 ───────────────────────────── */
+    const updateProfile = (key, value) =>
+        setData((prev) => ({ ...prev, profile: { ...prev.profile, [key]: value } }));
 
-    const handleArrayChange = (arrayName, index, field, value) => {
-        setData(prev => {
-            const newArray = [...(prev[arrayName] || [])];
-            newArray[index] = { ...newArray[index], [field]: value };
-            return { ...prev, [arrayName]: newArray };
+    const mutateStats = (mutate) =>
+        setData((prev) => ({ ...prev, profile: { ...prev.profile, stats: mutate([...(prev.profile.stats || [])]) } }));
+
+    const mutateList = (key, mutate) =>
+        setData((prev) => ({ ...prev, [key]: mutate([...(prev[key] || [])]) }));
+
+    const updateItem = (key, index, patch) =>
+        mutateList(key, (list) => {
+            list[index] = { ...list[index], ...patch };
+            return list;
         });
+
+    const addItem = (key, template) => mutateList(key, (list) => [...list, template]);
+
+    const removeItem = (key, index) => {
+        if (!window.confirm('이 항목을 삭제할까요?')) return;
+        mutateList(key, (list) => list.filter((_, i) => i !== index));
     };
 
-    const handleFlatArrayChange = (arrayName, index, value) => {
-        setData(prev => {
-            const newArray = [...(prev[arrayName] || [])];
-            newArray[index] = value;
-            return { ...prev, [arrayName]: newArray };
+    const moveItem = (key, index, delta) =>
+        mutateList(key, (list) => {
+            const target = index + delta;
+            if (target < 0 || target >= list.length) return list;
+            [list[index], list[target]] = [list[target], list[index]];
+            return list;
         });
+
+    const goToSection = (id) => {
+        setActiveSection(id);
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    const addArrayItem = (arrayName, template) => {
-        setData(prev => ({ ...prev, [arrayName]: [...(prev[arrayName] || []), template] }));
-    };
+    /* ── 화면 ──────────────────────────────────────── */
+    if (!authChecked) {
+        return <div className="admin-center">확인 중…</div>;
+    }
 
-    const removeArrayItem = (arrayName, index) => {
-        if (!confirm('정말 삭제하시겠습니까?')) return;
-        setData(prev => {
-            const newArray = [...(prev[arrayName] || [])];
-            newArray.splice(index, 1);
-            return { ...prev, [arrayName]: newArray };
-        });
-    };
-
-
-    /* Render */
     if (!session) {
         return (
-            <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-color, #F1F3F9)' }}>
-                <div style={{ background: '#fff', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', width: '100%', maxWidth: '400px' }}>
-                    <h1 style={{ marginBottom: '2rem', textAlign: 'center', fontSize: '1.5rem', fontWeight: '800', letterSpacing: '-0.03em' }}>포트폴리오 관리자</h1>
+            <div className="admin-login">
+                <div className="admin-login-card">
+                    <span className="brand-mark" aria-hidden="true">P/J</span>
+                    <h1>포트폴리오 관리자</h1>
+                    <p>Supabase 계정으로 로그인하면 사이트 내용을 수정할 수 있습니다.</p>
+
+                    {message?.type === 'error' && (
+                        <div className="form-status form-status--error" role="status"><span>{message.text}</span></div>
+                    )}
+
                     <form onSubmit={handleLogin}>
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600', color: '#4B5563' }}>이메일</label>
-                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #E5E7EB', outline: 'none' }} placeholder="admin@example.com" />
+                        <div className="form-field">
+                            <label htmlFor="admin-email">이메일</label>
+                            <input id="admin-email" type="email" autoComplete="username" value={email}
+                                onChange={(event) => setEmail(event.target.value)} placeholder="admin@example.com" required />
                         </div>
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600', color: '#4B5563' }}>비밀번호</label>
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
-                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #E5E7EB', outline: 'none' }} placeholder="••••••••" />
+                        <div className="form-field">
+                            <label htmlFor="admin-password">비밀번호</label>
+                            <input id="admin-password" type="password" autoComplete="current-password" value={password}
+                                onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" required />
                         </div>
-                        <button type="submit" style={{ width: '100%', padding: '12px', background: '#1F2937', color: '#fff', borderRadius: '8px', fontWeight: '700', border: 'none', cursor: 'pointer' }} disabled={loading}>
-                            {loading ? '로그인 중...' : '로그인'}
+                        <button className="button button--primary" type="submit" disabled={loading}>
+                            {loading ? '로그인 중…' : '로그인'}
                         </button>
                     </form>
-                    <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                        <Link href="/" style={{ fontSize: '0.9rem', color: '#9CA3AF', textDecoration: 'underline' }}>사이트로 돌아가기</Link>
-                    </div>
+
+                    <Link className="admin-back" href="/">사이트로 돌아가기</Link>
                 </div>
             </div>
         );
     }
 
-    if (!data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>데이터를 불러오는 중...</div>;
+    if (!data) return <div className="admin-center">데이터를 불러오는 중…</div>;
 
-    const navItems = [
-        { id: 'basic', label: '기본 정보' },
-        { id: 'contact', label: '연락처' },
-        { id: 'experience', label: '경력 사항' },
-        { id: 'projects', label: '추가 프로젝트' },
-        { id: 'education', label: '학력' },
-        { id: 'skills', label: '보유 스킬' }
-    ];
-
-    const scrollToSection = (id) => {
-        setActiveSection(id);
-        const el = document.getElementById(id);
-        if (el) {
-            const y = el.getBoundingClientRect().top + window.scrollY - 100;
-            window.scrollTo({ top: y, behavior: 'smooth' });
-        }
-    };
-
-    // Helper UI styles
-    const cardStyle = { background: '#fff', borderRadius: '16px', padding: '32px', marginBottom: '40px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' };
-    const sectionTitleStyle = { fontSize: '1.2rem', fontWeight: '700', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
-    const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #D1D5DB', outline: 'none', transition: 'border 0.2s', fontSize: '0.95rem' };
-    const labelStyle = { display: 'block', marginBottom: '6px', fontSize: '0.9rem', fontWeight: '600', color: '#374151' };
-    const btnSecondary = { padding: '6px 16px', background: '#F3F4F6', color: '#374151', borderRadius: '6px', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '0.85rem' };
-    const btnDanger = { padding: '4px 12px', background: '#FEE2E2', color: '#DC2626', borderRadius: '6px', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '0.8rem' };
+    const profile = data.profile || {};
+    const stats = profile.stats || [];
 
     return (
-        <div style={{ minHeight: '100vh', background: '#F9FAFB', fontFamily: "'Pretendard', sans-serif" }}>
-            {/* 고정 상단바 */}
-            <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', borderBottom: '1px solid #E5E7EB', padding: '16px 24px' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontWeight: '800', fontSize: '1.25rem', letterSpacing: '-0.03em', color: '#111827' }}>Dash<span style={{ color: '#A855F7' }}>board</span></div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        {message && <span style={{ color: message.includes('❌') ? '#DC2626' : '#059669', fontSize: '0.9rem', fontWeight: '600' }}>{message}</span>}
-                        <Link href="/" target="_blank" style={{ ...btnSecondary, textDecoration: 'none' }}>미리보기</Link>
-                        <button onClick={saveChanges} style={{ padding: '8px 20px', background: '#A855F7', color: '#fff', borderRadius: '6px', border: 'none', fontWeight: '700', cursor: 'pointer' }} disabled={loading}>
-                            {loading ? '저장 중...' : '변경사항 저장'}
+        <div className="admin-shell">
+            <header className="admin-topbar">
+                <div className="admin-topbar-inner">
+                    <div className="admin-title">
+                        <span className="brand-mark" aria-hidden="true">P/J</span>
+                        <strong>포트폴리오 관리자</strong>
+                    </div>
+                    <div className="admin-actions">
+                        {message && (
+                            <span className={`admin-message admin-message--${message.type}`} role="status">{message.text}</span>
+                        )}
+                        <Link className="button button--secondary button--small" href="/" target="_blank">미리보기</Link>
+                        <button className="button button--primary button--small" type="button" onClick={saveChanges} disabled={loading}>
+                            {loading ? '처리 중…' : '변경사항 저장'}
                         </button>
-                        <button onClick={handleLogout} style={{ ...btnSecondary, background: 'transparent', color: '#9CA3AF' }}>로그아웃</button>
+                        <button className="button button--small" type="button" onClick={handleLogout}>로그아웃</button>
                     </div>
                 </div>
             </header>
 
-            <div style={{ maxWidth: '1200px', margin: '40px auto 0', padding: '0 24px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+            <div className="admin-body">
+                <nav className="admin-nav" aria-label="관리 항목">
+                    {SECTIONS.map((section) => (
+                        <button
+                            className={activeSection === section.id ? 'is-active' : ''}
+                            type="button"
+                            key={section.id}
+                            onClick={() => goToSection(section.id)}
+                        >
+                            {section.label}
+                        </button>
+                    ))}
+                </nav>
 
-                {/* 사이드바 (Navigation) */}
-                <aside style={{ width: '220px', position: 'sticky', top: '100px', flexShrink: 0 }}>
-                    <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        {navItems.map(item => (
-                            <button
-                                key={item.id}
-                                onClick={() => scrollToSection(item.id)}
-                                style={{
-                                    textAlign: 'left', padding: '10px 16px', borderRadius: '8px', transition: 'all 0.2s',
-                                    background: activeSection === item.id ? '#F3E8FF' : 'transparent',
-                                    color: activeSection === item.id ? '#9333EA' : '#4B5563',
-                                    fontWeight: activeSection === item.id ? '700' : '500',
-                                    border: 'none', cursor: 'pointer', fontSize: '0.95rem'
-                                }}
-                            >
-                                {item.label}
+                <main className="admin-main">
+                    {/* 기본 정보 */}
+                    <section className="admin-card" id="profile">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>기본 정보</h2>
+                                <p>첫 화면과 문의 영역에 표시되는 정보입니다.</p>
+                            </div>
+                        </div>
+                        <div className="admin-grid">
+                            <Field label="이름">
+                                <input value={profile.name || ''} onChange={(e) => updateProfile('name', e.target.value)} placeholder="예: 박주임 (Ju-im Park)" />
+                            </Field>
+                            <Field label="직함">
+                                <input value={profile.role || ''} onChange={(e) => updateProfile('role', e.target.value)} placeholder="예: 사회복지사 & 스마트워크 빌더" />
+                            </Field>
+                            <Field label="도메인">
+                                <input value={profile.domain || ''} onChange={(e) => updateProfile('domain', e.target.value)} placeholder="parkjuim90.cloud" />
+                            </Field>
+                            <Field label="활동 지역">
+                                <input value={profile.location || ''} onChange={(e) => updateProfile('location', e.target.value)} placeholder="강원특별자치도 원주시" />
+                            </Field>
+                            <Field label="이메일">
+                                <input type="email" value={profile.email || ''} onChange={(e) => updateProfile('email', e.target.value)} placeholder="hello@example.com" />
+                            </Field>
+                            <Field label="전화번호" hint="(화면에는 표시되지 않습니다)">
+                                <input value={profile.phone || ''} onChange={(e) => updateProfile('phone', e.target.value)} placeholder="010-0000-0000" />
+                            </Field>
+                            <Field label="블로그 주소" hint="(비우면 문의 영역에서 숨겨집니다)">
+                                <input value={profile.blog || ''} onChange={(e) => updateProfile('blog', e.target.value)} placeholder="https://blog.naver.com/..." />
+                            </Field>
+                            <Field label="GitHub 주소">
+                                <input value={profile.github || ''} onChange={(e) => updateProfile('github', e.target.value)} placeholder="https://github.com/..." />
+                            </Field>
+                            <Field label="소개글" wide>
+                                <textarea value={profile.introduction || ''} onChange={(e) => updateProfile('introduction', e.target.value)} placeholder="어떤 일을 하는 사람인지 2~3문장으로 소개해주세요." />
+                            </Field>
+                        </div>
+                    </section>
+
+                    {/* 주요 지표 */}
+                    <section className="admin-card" id="stats">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>주요 지표</h2>
+                                <p>첫 화면 아래쪽 숫자 띠에 표시됩니다. 4개를 권장합니다.</p>
+                            </div>
+                            <button className="button button--soft button--small" type="button"
+                                onClick={() => mutateStats((list) => [...list, { label: '', value: '', unit: '' }])}>
+                                + 지표 추가
                             </button>
-                        ))}
-                    </nav>
-                </aside>
-
-                {/* 메인 폼 영역 */}
-                <main style={{ flex: 1, paddingBottom: '100px' }}>
-
-                    {/* 1. Basic Info */}
-                    <section id="basic" style={cardStyle}>
-                        <div style={sectionTitleStyle}>기본 정보</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-                            <div>
-                                <label style={labelStyle}>이름</label>
-                                <input name="name" value={data.name} onChange={handleBasicChange} style={inputStyle} placeholder="예: 이수진" />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>직업 / 타이틀</label>
-                                <input name="role" value={data.role} onChange={handleBasicChange} style={inputStyle} placeholder="예: 그래픽 디자이너" />
-                            </div>
                         </div>
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={labelStyle}>프로필 이미지 URL</label>
-                            <input name="profileImage" value={data.profileImage || ''} onChange={handleBasicChange} style={inputStyle} placeholder="https://..." />
-                        </div>
-                        <div>
-                            <label style={labelStyle}>소개글</label>
-                            <textarea name="introduction" value={data.introduction} onChange={handleBasicChange} style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} placeholder="안녕하세요, 저는..." />
-                        </div>
-                    </section>
-
-                    {/* 2. Contact */}
-                    <section id="contact" style={cardStyle}>
-                        <div style={sectionTitleStyle}>연락처 상세</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                            <div>
-                                <label style={labelStyle}>이메일</label>
-                                <input name="email" value={data.contact?.email || ''} onChange={handleContactChange} style={inputStyle} placeholder="hello@example.com" />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>전화번호</label>
-                                <input name="phone" value={data.contact?.phone || ''} onChange={handleContactChange} style={inputStyle} placeholder="010-0000-0000" />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>웹사이트 (블로그 등)</label>
-                                <input name="blog" value={data.contact?.blog || ''} onChange={handleContactChange} style={inputStyle} placeholder="www.yourdomain.com" />
-                            </div>
+                        <div className="admin-list">
+                            {stats.map((stat, index) => (
+                                <ItemCard
+                                    label="지표" key={index} index={index} total={stats.length}
+                                    onMove={(i, delta) => mutateStats((list) => {
+                                        const target = i + delta;
+                                        if (target < 0 || target >= list.length) return list;
+                                        [list[i], list[target]] = [list[target], list[i]];
+                                        return list;
+                                    })}
+                                    onRemove={(i) => {
+                                        if (!window.confirm('이 항목을 삭제할까요?')) return;
+                                        mutateStats((list) => list.filter((_, index2) => index2 !== i));
+                                    }}
+                                >
+                                    <div className="admin-grid admin-grid--three">
+                                        <Field label="설명">
+                                            <input value={stat.label || ''} onChange={(e) => mutateStats((list) => {
+                                                list[index] = { ...list[index], label: e.target.value };
+                                                return list;
+                                            })} placeholder="자체 개발 복지 솔루션" />
+                                        </Field>
+                                        <Field label="숫자">
+                                            <input value={stat.value || ''} onChange={(e) => mutateStats((list) => {
+                                                list[index] = { ...list[index], value: e.target.value };
+                                                return list;
+                                            })} placeholder="10+" />
+                                        </Field>
+                                        <Field label="단위">
+                                            <input value={stat.unit || ''} onChange={(e) => mutateStats((list) => {
+                                                list[index] = { ...list[index], unit: e.target.value };
+                                                return list;
+                                            })} placeholder="개" />
+                                        </Field>
+                                    </div>
+                                </ItemCard>
+                            ))}
+                            {stats.length === 0 && <p className="admin-empty">등록된 지표가 없습니다.</p>}
                         </div>
                     </section>
 
-                    {/* 3. Experience */}
-                    <section id="experience" style={cardStyle}>
-                        <div style={sectionTitleStyle}>
-                            <span>경력 사항</span>
-                            <button onClick={() => addArrayItem('experiences', { id: Date.now(), company: '', role: '', period: '', description: '' })} style={btnSecondary}>+ 경력 추가</button>
+                    {/* 일하는 원칙 */}
+                    <section className="admin-card" id="philosophy">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>일하는 원칙</h2>
+                                <p>2열 격자로 표시되므로 4개 단위가 가장 보기 좋습니다.</p>
+                            </div>
+                            <button className="button button--soft button--small" type="button"
+                                onClick={() => addItem('philosophy', { id: Date.now(), title: '', subtitle: '', desc: '' })}>
+                                + 원칙 추가
+                            </button>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            {data.experiences.map((exp, idx) => (
-                                <div key={exp.id || idx} style={{ padding: '20px', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #F3F4F6', position: 'relative' }}>
-                                    <button onClick={() => removeArrayItem('experiences', idx)} style={{ ...btnDanger, position: 'absolute', top: '16px', right: '16px' }}>삭제</button>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px', paddingRight: '60px' }}>
-                                        <div>
-                                            <label style={{ ...labelStyle, fontSize: '0.8rem', color: '#6B7280' }}>회사명/소속</label>
-                                            <input value={exp.company || ''} onChange={(e) => handleArrayChange('experiences', idx, 'company', e.target.value)} style={inputStyle} placeholder="예: Liceria & Co." />
+                        <div className="admin-list">
+                            {data.philosophy.map((item, index) => (
+                                <ItemCard
+                                    label="원칙" key={item.id || index} index={index} total={data.philosophy.length}
+                                    onMove={(i, delta) => moveItem('philosophy', i, delta)}
+                                    onRemove={(i) => removeItem('philosophy', i)}
+                                >
+                                    <div className="admin-grid">
+                                        <Field label="영문 소제목">
+                                            <input value={item.subtitle || ''} onChange={(e) => updateItem('philosophy', index, { subtitle: e.target.value })} placeholder="Human-First Efficiency" />
+                                        </Field>
+                                        <Field label="제목">
+                                            <input value={item.title || ''} onChange={(e) => updateItem('philosophy', index, { title: e.target.value })} placeholder="행정을 줄여 사람을 봅니다" />
+                                        </Field>
+                                        <Field label="설명" wide>
+                                            <textarea value={item.desc || ''} onChange={(e) => updateItem('philosophy', index, { desc: e.target.value })} />
+                                        </Field>
+                                    </div>
+                                </ItemCard>
+                            ))}
+                            {data.philosophy.length === 0 && <p className="admin-empty">등록된 원칙이 없습니다.</p>}
+                        </div>
+                    </section>
+
+                    {/* 프로젝트 */}
+                    <section className="admin-card" id="projects">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>프로젝트</h2>
+                                <p>‘대표 프로젝트’로 표시하면 카드가 두 칸 너비로 커집니다.</p>
+                            </div>
+                            <button className="button button--soft button--small" type="button"
+                                onClick={() => addItem('projects', {
+                                    id: `project-${Date.now()}`,
+                                    category: PROJECT_CATEGORIES[0].id,
+                                    categoryLabel: PROJECT_CATEGORIES[0].label,
+                                    title: '', subtitle: '', summary: '', description: '',
+                                    highlights: [], techStack: [], link: '#', badge: '', icon: PROJECT_ICON_NAMES[0],
+                                })}>
+                                + 프로젝트 추가
+                            </button>
+                        </div>
+                        <div className="admin-list">
+                            {data.projects.map((project, index) => (
+                                <ItemCard
+                                    label="프로젝트" key={project.id || index} index={index} total={data.projects.length}
+                                    onMove={(i, delta) => moveItem('projects', i, delta)}
+                                    onRemove={(i) => removeItem('projects', i)}
+                                >
+                                    <div className="admin-grid">
+                                        <Field label="제목">
+                                            <input value={project.title || ''} onChange={(e) => updateItem('projects', index, { title: e.target.value })} />
+                                        </Field>
+                                        <Field label="영문 부제">
+                                            <input value={project.subtitle || ''} onChange={(e) => updateItem('projects', index, { subtitle: e.target.value })} />
+                                        </Field>
+                                        <Field label="카테고리">
+                                            <select
+                                                value={project.category || ''}
+                                                onChange={(e) => updateItem('projects', index, {
+                                                    category: e.target.value,
+                                                    categoryLabel: getCategoryLabel(e.target.value),
+                                                })}
+                                            >
+                                                {PROJECT_CATEGORIES.map((category) => (
+                                                    <option value={category.id} key={category.id}>{category.label}</option>
+                                                ))}
+                                            </select>
+                                        </Field>
+                                        <Field label="아이콘">
+                                            <select value={project.icon || ''} onChange={(e) => updateItem('projects', index, { icon: e.target.value })}>
+                                                {PROJECT_ICON_NAMES.map((name) => <option value={name} key={name}>{name}</option>)}
+                                            </select>
+                                        </Field>
+                                        <Field label="배지" hint="(카드 오른쪽 위 라벨)">
+                                            <input value={project.badge || ''} onChange={(e) => updateItem('projects', index, { badge: e.target.value })} placeholder="실무 도입 완료" />
+                                        </Field>
+                                        <Field label="링크" hint="(없으면 # 그대로)">
+                                            <input value={project.link || ''} onChange={(e) => updateItem('projects', index, { link: e.target.value })} placeholder="https://..." />
+                                        </Field>
+                                        <Field label="한 줄 요약" wide>
+                                            <textarea value={project.summary || ''} onChange={(e) => updateItem('projects', index, { summary: e.target.value })} />
+                                        </Field>
+                                        <Field label="상세 설명" hint="(자세히 보기 창에 표시)" wide>
+                                            <textarea value={project.description || ''} onChange={(e) => updateItem('projects', index, { description: e.target.value })} />
+                                        </Field>
+                                        <Field label="주요 기능" hint="한 줄에 하나씩">
+                                            <textarea value={toLines(project.highlights)} onChange={(e) => updateItem('projects', index, { highlights: fromLines(e.target.value) })} />
+                                        </Field>
+                                        <Field label="기술 스택" hint="한 줄에 하나씩">
+                                            <textarea value={toLines(project.techStack)} onChange={(e) => updateItem('projects', index, { techStack: fromLines(e.target.value) })} />
+                                        </Field>
+                                        <div className="admin-span-all">
+                                            <label className="admin-check">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={project.featured ?? Boolean(project.badge?.includes('★'))}
+                                                    onChange={(e) => updateItem('projects', index, { featured: e.target.checked })}
+                                                />
+                                                대표 프로젝트로 크게 표시하기
+                                            </label>
                                         </div>
-                                        <div>
-                                            <label style={{ ...labelStyle, fontSize: '0.8rem', color: '#6B7280' }}>기간</label>
-                                            <input value={exp.period || ''} onChange={(e) => handleArrayChange('experiences', idx, 'period', e.target.value)} style={inputStyle} placeholder="예: 2023년 12월 - 2025년 2월" />
+                                    </div>
+                                </ItemCard>
+                            ))}
+                            {data.projects.length === 0 && <p className="admin-empty">등록된 프로젝트가 없습니다.</p>}
+                        </div>
+                    </section>
+
+                    {/* 경력 */}
+                    <section className="admin-card" id="experiences">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>경력</h2>
+                                <p>위에 있는 항목이 먼저 표시됩니다.</p>
+                            </div>
+                            <button className="button button--soft button--small" type="button"
+                                onClick={() => addItem('experiences', { id: Date.now(), period: '', company: '', role: '', description: '', tags: [] })}>
+                                + 경력 추가
+                            </button>
+                        </div>
+                        <div className="admin-list">
+                            {data.experiences.map((experience, index) => (
+                                <ItemCard
+                                    label="경력" key={experience.id || index} index={index} total={data.experiences.length}
+                                    onMove={(i, delta) => moveItem('experiences', i, delta)}
+                                    onRemove={(i) => removeItem('experiences', i)}
+                                >
+                                    <div className="admin-grid">
+                                        <Field label="기간">
+                                            <input value={experience.period || ''} onChange={(e) => updateItem('experiences', index, { period: e.target.value })} placeholder="2018 - 현재" />
+                                        </Field>
+                                        <Field label="소속">
+                                            <input value={experience.company || ''} onChange={(e) => updateItem('experiences', index, { company: e.target.value })} />
+                                        </Field>
+                                        <Field label="역할" wide>
+                                            <input value={experience.role || ''} onChange={(e) => updateItem('experiences', index, { role: e.target.value })} />
+                                        </Field>
+                                        <Field label="설명" wide>
+                                            <textarea value={experience.description || ''} onChange={(e) => updateItem('experiences', index, { description: e.target.value })} />
+                                        </Field>
+                                        <Field label="태그" hint="한 줄에 하나씩" wide>
+                                            <textarea value={toLines(experience.tags)} onChange={(e) => updateItem('experiences', index, { tags: fromLines(e.target.value) })} />
+                                        </Field>
+                                    </div>
+                                </ItemCard>
+                            ))}
+                            {data.experiences.length === 0 && <p className="admin-empty">등록된 경력이 없습니다.</p>}
+                        </div>
+                    </section>
+
+                    {/* 기록 */}
+                    <section className="admin-card" id="stories">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>기록</h2>
+                                <p>첫 번째 글이 두 칸 너비로 크게 표시됩니다.</p>
+                            </div>
+                            <button className="button button--soft button--small" type="button"
+                                onClick={() => addItem('stories', { id: Date.now(), tag: '', date: '', readTime: '3분', title: '', content: '', likes: 0, link: '' })}>
+                                + 기록 추가
+                            </button>
+                        </div>
+                        <div className="admin-list">
+                            {data.stories.map((story, index) => (
+                                <ItemCard
+                                    label="기록" key={story.id || index} index={index} total={data.stories.length}
+                                    onMove={(i, delta) => moveItem('stories', i, delta)}
+                                    onRemove={(i) => removeItem('stories', i)}
+                                >
+                                    <div className="admin-grid admin-grid--three">
+                                        <Field label="분류">
+                                            <input value={story.tag || ''} onChange={(e) => updateItem('stories', index, { tag: e.target.value })} placeholder="개발기" />
+                                        </Field>
+                                        <Field label="날짜">
+                                            <input value={story.date || ''} onChange={(e) => updateItem('stories', index, { date: e.target.value })} placeholder="2026.08" />
+                                        </Field>
+                                        <Field label="읽는 시간">
+                                            <input value={story.readTime || ''} onChange={(e) => updateItem('stories', index, { readTime: e.target.value })} placeholder="3분" />
+                                        </Field>
+                                    </div>
+                                    <div className="admin-grid">
+                                        <Field label="제목" wide>
+                                            <input value={story.title || ''} onChange={(e) => updateItem('stories', index, { title: e.target.value })} />
+                                        </Field>
+                                        <Field label="내용" wide>
+                                            <textarea value={story.content || ''} onChange={(e) => updateItem('stories', index, { content: e.target.value })} />
+                                        </Field>
+                                        <Field label="원문 링크" hint="(입력하면 ‘기록 읽기’가 나타납니다)">
+                                            <input value={story.link || ''} onChange={(e) => updateItem('stories', index, { link: e.target.value })} placeholder="https://..." />
+                                        </Field>
+                                        <Field label="공감 수">
+                                            <input type="number" min="0" value={story.likes ?? 0}
+                                                onChange={(e) => updateItem('stories', index, { likes: Number(e.target.value) || 0 })} />
+                                        </Field>
+                                    </div>
+                                </ItemCard>
+                            ))}
+                            {data.stories.length === 0 && <p className="admin-empty">등록된 기록이 없습니다.</p>}
+                        </div>
+                    </section>
+
+                    {/* 방명록 */}
+                    <section className="admin-card" id="guestbook">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>방명록</h2>
+                                <p>방문자가 남긴 글입니다. 부적절한 글은 삭제할 수 있습니다.</p>
+                            </div>
+                        </div>
+                        <div className="admin-list">
+                            {data.guestbook.map((entry, index) => (
+                                <div className="admin-item" key={entry.id || index}>
+                                    <div className="admin-item-head">
+                                        <span className="admin-item-label">{entry.emoji || '💬'} {entry.author} · {entry.date}</span>
+                                        <div className="admin-item-tools">
+                                            <button type="button" className="is-danger" onClick={() => removeItem('guestbook', index)}>삭제</button>
                                         </div>
                                     </div>
-                                    <div style={{ marginBottom: '16px' }}>
-                                        <label style={{ ...labelStyle, fontSize: '0.8rem', color: '#6B7280' }}>직급/역할</label>
-                                        <input value={exp.role || ''} onChange={(e) => handleArrayChange('experiences', idx, 'role', e.target.value)} style={{ ...inputStyle, fontWeight: '600' }} placeholder="예: 디자인팀 파트장" />
-                                    </div>
-                                    <div>
-                                        <label style={{ ...labelStyle, fontSize: '0.8rem', color: '#6B7280' }}>담당 업무 (엔터키로 구분)</label>
-                                        <textarea value={exp.description || ''} onChange={(e) => handleArrayChange('experiences', idx, 'description', e.target.value)} style={{ ...inputStyle, minHeight: '80px' }} placeholder="웹사이트 구축 프로젝트&#13;&#10;로고 제작" />
-                                    </div>
+                                    <p className="admin-guest-message">{entry.message}</p>
                                 </div>
                             ))}
-                            {data.experiences.length === 0 && <p style={{ color: '#9CA3AF', textAlign: 'center', padding: '20px' }}>등록된 경력이 없습니다.</p>}
+                            {data.guestbook.length === 0 && <p className="admin-empty">아직 남겨진 메시지가 없습니다.</p>}
                         </div>
+
+                        <p className="admin-note">
+                            삭제한 뒤에도 <strong>[변경사항 저장]</strong>을 눌러야 사이트에 반영됩니다.
+                        </p>
                     </section>
 
-                    {/* 4. Projects (Optional) */}
-                    <section id="projects" style={cardStyle}>
-                        <div style={sectionTitleStyle}>
-                            <span>추가 프로젝트 (선택)</span>
-                            <button onClick={() => addArrayItem('projects', { id: Date.now(), title: '', description: '', link: '' })} style={btnSecondary}>+ 프로젝트 추가</button>
+                    <section className="admin-card">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>초기화</h2>
+                                <p>저장된 내용을 모두 지우고 코드에 들어 있는 기본 데이터로 되돌립니다.</p>
+                            </div>
+                            <button className="button button--secondary button--small" type="button" onClick={resetToBundled} disabled={loading}>
+                                기본 데이터로 되돌리기
+                            </button>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            {data.projects.map((proj, idx) => (
-                                <div key={proj.id || idx} style={{ padding: '20px', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #F3F4F6' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                        <input value={proj.title || ''} onChange={(e) => handleArrayChange('projects', idx, 'title', e.target.value)} style={{ ...inputStyle, width: 'calc(100% - 70px)', fontWeight: '600' }} placeholder="프로젝트 제목" />
-                                        <button onClick={() => removeArrayItem('projects', idx)} style={btnDanger}>삭제</button>
-                                    </div>
-                                    <textarea value={proj.description || ''} onChange={(e) => handleArrayChange('projects', idx, 'description', e.target.value)} style={{ ...inputStyle, marginBottom: '12px', minHeight: '60px' }} placeholder="설명" />
-                                    <input value={proj.link || ''} onChange={(e) => handleArrayChange('projects', idx, 'link', e.target.value)} style={{ ...inputStyle, fontSize: '0.85rem' }} placeholder="관련 링크 URL (선택)" />
-                                </div>
-                            ))}
-                            {data.projects.length === 0 && <p style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>작성 시 하단 교육 섹션 위에 '기타 프로젝트' 항목이 표시됩니다.</p>}
-                        </div>
+                        <p className="admin-note">되돌린 내용은 복구할 수 없으니 주의해주세요.</p>
                     </section>
-
-                    {/* 5. Education */}
-                    <section id="education" style={cardStyle}>
-                        <div style={sectionTitleStyle}>
-                            <span>학력</span>
-                            <button onClick={() => addArrayItem('education', { id: Date.now(), school: '', details: '' })} style={btnSecondary}>+ 학력 추가</button>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            {data.education.map((edu, idx) => (
-                                <div key={idx} style={{ display: 'flex', gap: '10px' }}>
-                                    <input value={edu.school || ''} onChange={(e) => handleArrayChange('education', idx, 'school', e.target.value)} style={{ ...inputStyle, flex: 1 }} placeholder="학교명 (예: Liceria 대학원)" />
-                                    <input value={edu.details || ''} onChange={(e) => handleArrayChange('education', idx, 'details', e.target.value)} style={{ ...inputStyle, flex: 2 }} placeholder="세부내용 (예: 브랜드 마케팅 전공 · 2026년 졸업)" />
-                                    <button onClick={() => removeArrayItem('education', idx)} style={{ border: 'none', background: 'transparent', color: '#DC2626', fontSize: '1.2rem', cursor: 'pointer', padding: '0 8px' }}>&times;</button>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* 6. Skills */}
-                    <section id="skills" style={cardStyle}>
-                        <div style={sectionTitleStyle}><span>보유 스킬</span></div>
-
-                        <div style={{ marginBottom: '32px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                <label style={labelStyle}>디자인 스킬 (태그 형태)</label>
-                                <button onClick={() => addArrayItem('skills', '')} style={btnSecondary}>+ 스킬 추가</button>
-                            </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                                {data.skills.map((skill, idx) => (
-                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', background: '#F3F4F6', borderRadius: '20px', padding: '4px 12px', border: '1px solid #E5E7EB' }}>
-                                        <input value={skill} onChange={(e) => handleFlatArrayChange('skills', idx, e.target.value)} style={{ border: 'none', background: 'transparent', outline: 'none', width: '80px', fontSize: '0.9rem', textAlign: 'center' }} placeholder="스킬명" />
-                                        <button onClick={() => removeArrayItem('skills', idx)} style={{ border: 'none', background: 'transparent', color: '#9CA3AF', cursor: 'pointer', marginLeft: '4px' }}>&times;</button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                <label style={labelStyle}>그 외 능력 (언어 등)</label>
-                                <button onClick={() => addArrayItem('otherSkills', { label: '', value: '' })} style={btnSecondary}>+ 항목 추가</button>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {data.otherSkills.map((os, idx) => (
-                                    <div key={idx} style={{ display: 'flex', gap: '10px' }}>
-                                        <input value={os.label || ''} onChange={(e) => handleArrayChange('otherSkills', idx, 'label', e.target.value)} style={{ ...inputStyle, width: '150px' }} placeholder="항목 (예: 영어 능력)" />
-                                        <input value={os.value || ''} onChange={(e) => handleArrayChange('otherSkills', idx, 'value', e.target.value)} style={{ ...inputStyle, flex: 1 }} placeholder="수준 (예: 원어민 (Native))" />
-                                        <button onClick={() => removeArrayItem('otherSkills', idx)} style={{ border: 'none', background: 'transparent', color: '#DC2626', fontSize: '1.2rem', cursor: 'pointer', padding: '0 8px' }}>&times;</button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
                 </main>
             </div>
         </div>
