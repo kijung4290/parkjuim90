@@ -66,9 +66,9 @@ export default function ArchiveSection({ projects = [] }) {
     <section className="section section--white" id="archive" aria-labelledby="archive-title">
       <div className="container">
         <header className="section-head">
-          <span className="eyebrow">Selected work</span>
-          <h2 className="section-title" id="archive-title">현장의 문제에서 출발한 실무형 소프트웨어</h2>
-          <p className="section-description">반복되는 기록과 행정은 줄이고, 사례관리와 돌봄의 흐름은 더 선명하게 만드는 도구를 직접 기획하고 개발했습니다.</p>
+          <span className="eyebrow">Smart work education & tools</span>
+          <h2 className="section-title" id="archive-title">스마트워크 교육에서 바로 쓰는 현장 도구</h2>
+          <p className="section-description">스마트워커 박주임이 스마트워크 교육, 직원역량강화교육, 바이브코딩 교육과 스마트워크 컨설팅 현장에서 활용하는 도구입니다. 반복되는 기록과 행정을 줄이는 실무형 웹앱을 직접 기획하고 개발했습니다.</p>
         </header>
 
         <div className="archive-toolbar">

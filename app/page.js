@@ -1,5 +1,6 @@
 import { getPortfolioData } from '@/lib/data';
 import { DEFAULT_HERO, DEFAULT_PROFILE } from '@/lib/defaults';
+import { TOOL_CATALOG } from '@/data/tools';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import PhilosophySection from '@/components/PhilosophySection';
@@ -31,7 +32,7 @@ export default async function Home() {
       <main id="main-content">
         <HeroSection hero={hero} />
         <PhilosophySection philosophy={data.philosophy || []} />
-        <ArchiveSection projects={data.projects || []} />
+        <ArchiveSection projects={TOOL_CATALOG} />
         <ExperienceSection experiences={data.experiences || []} />
         <StorySection stories={data.stories || []} />
         <GuestbookSection initialGuestbook={data.guestbook || []} />
