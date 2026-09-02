@@ -95,12 +95,16 @@ export default function ContactSection({ profile }) {
       <div className="container">
         <div className="contact-panel">
           <div className="contact-copy">
-            <span className="eyebrow">Request & collaboration</span>
+            <span className="eyebrow">
+              <span className="eyebrow-ko">요청과 협업</span>
+              <span className="eyebrow-divider" aria-hidden="true">/</span>
+              <span className="eyebrow-en" lang="en">Request & collaboration</span>
+            </span>
             <h2 id="contact-title">필요한 일을 알려주시면<br />함께 방법을 찾겠습니다.</h2>
             <p className="section-description">복지 현장 강의부터 반복 업무를 줄이는 양식과 자동화 도구 제작까지 편하게 문의해주세요.</p>
 
-            <div className="contact-list">
-              <div className="contact-item">
+            <div className="contact-list" role="list">
+              <div className="contact-item" role="listitem">
                 <span className="contact-icon"><Mail size={18} aria-hidden="true" /></span>
                 <span>
                   <span className="contact-label">받는 이메일</span>
@@ -111,7 +115,7 @@ export default function ContactSection({ profile }) {
                 </button>
               </div>
 
-              <div className="contact-item">
+              <div className="contact-item" role="listitem">
                 <span className="contact-icon"><MapPin size={18} aria-hidden="true" /></span>
                 <span>
                   <span className="contact-label">활동 지역</span>
@@ -121,7 +125,7 @@ export default function ContactSection({ profile }) {
               </div>
 
               {profile?.blog && (
-                <div className="contact-item">
+                <div className="contact-item" role="listitem">
                   <span className="contact-icon"><Globe2 size={18} aria-hidden="true" /></span>
                   <span>
                     <span className="contact-label">블로그</span>
@@ -133,10 +137,13 @@ export default function ContactSection({ profile }) {
             </div>
           </div>
 
-          <form className="contact-request-form" onSubmit={openEmailDraft}>
+          <form className="contact-request-form" onSubmit={openEmailDraft} aria-labelledby="request-form-title">
             <div className="request-form-head">
-              <span>REQUEST NOTE</span>
-              <strong>어떤 도움이 필요하세요?</strong>
+              <span className="request-note-label">
+                <span>요청서</span>
+                <span className="request-note-label-en" lang="en">Request note</span>
+              </span>
+              <strong id="request-form-title">어떤 도움이 필요하세요?</strong>
               <p>요청 종류를 선택하면 이메일 제목과 본문이 자동으로 정리됩니다.</p>
             </div>
 

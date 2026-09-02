@@ -64,11 +64,17 @@ export default function Navbar() {
   return (
     <nav className={`site-nav${scrolled ? ' is-scrolled' : ''}`} aria-label="주요 메뉴">
       <div className="container nav-inner">
-        <Link className="brand" href="/" aria-label="박주임 포트폴리오 홈">
-          <span className="brand-mark" aria-hidden="true">P/J</span>
+        <Link className="brand" href="/" aria-label="박주임의 현장 도구 작업실 홈">
+          <span className="brand-mark" aria-hidden="true">
+            <span className="brand-monogram">P/J</span>
+            <span className="brand-mark-status" />
+          </span>
           <span className="brand-copy">
-            <span className="brand-name">박주임의 현장 도구</span>
-            <span className="brand-role">Social worker · Practical builder</span>
+            <span className="brand-name">박주임의 현장 도구 작업실</span>
+            <span className="brand-role">
+              <span>복지 현장 × 실용 소프트웨어</span>
+              <span className="brand-copy-accent" lang="en">Field → Tool</span>
+            </span>
           </span>
         </Link>
 
@@ -87,7 +93,9 @@ export default function Navbar() {
           aria-controls="mobile-navigation"
           onClick={() => setMobileMenuOpen((open) => !open)}
         >
-          {mobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
+          {mobileMenuOpen
+            ? <X size={21} aria-hidden="true" />
+            : <Menu size={21} aria-hidden="true" />}
         </button>
       </div>
 

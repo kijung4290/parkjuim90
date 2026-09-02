@@ -97,7 +97,7 @@ const STRUCTURED_DATA = {
 };
 
 export const viewport = {
-  themeColor: "#f5f7f3",
+  themeColor: "#eef2ef",
   colorScheme: "light",
 };
 

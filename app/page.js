@@ -24,21 +24,22 @@ export default async function Home() {
     ...(data.hero || {}),
     slides: Array.isArray(data.hero?.slides) ? data.hero.slides : DEFAULT_HERO.slides,
   };
+  const projects = data.projects || TOOL_CATALOG;
 
   return (
-    <>
+    <div className="public-site">
       <a className="skip-link" href="#main-content">본문으로 바로가기</a>
       <Navbar />
       <main id="main-content">
-        <HeroSection hero={hero} />
+        <HeroSection hero={hero} profile={profile} projectCount={projects.length} />
         <PhilosophySection philosophy={data.philosophy || []} />
-        <ArchiveSection projects={data.projects || TOOL_CATALOG} />
+        <ArchiveSection projects={projects} />
         <ExperienceSection experiences={data.experiences || []} />
         <StorySection stories={data.stories || []} />
         <GuestbookSection initialGuestbook={data.guestbook || []} />
         <ContactSection profile={profile} />
       </main>
       <Footer profile={profile} />
-    </>
+    </div>
   );
 }

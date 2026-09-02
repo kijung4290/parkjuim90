@@ -50,14 +50,24 @@ export default function GuestbookSection({ initialGuestbook = [] }) {
     <section className="section section--sage" id="guestbook" aria-labelledby="guestbook-title">
       <div className="container">
         <header className="section-head">
-          <span className="eyebrow">Guestbook</span>
+          <span className="eyebrow">
+            <span className="eyebrow-ko">방명록</span>
+            <span className="eyebrow-divider" aria-hidden="true">/</span>
+            <span className="eyebrow-en" lang="en">Guestbook</span>
+          </span>
           <h2 className="section-title" id="guestbook-title">짧은 인사와 응원을 남겨주세요.</h2>
           <p className="section-description">도구를 사용한 소감, 협업 제안, 따뜻한 한마디를 모두 반갑게 읽겠습니다.</p>
         </header>
 
         <div className="guestbook-layout">
-          <div className="guestbook-form">
-            <h3>방명록 작성</h3>
+          <section className="guestbook-form" aria-labelledby="guestbook-form-title">
+            <header className="guestbook-form-head">
+              <span className="guestbook-panel-label">
+                <span>메시지 남기기</span>
+                <span className="guestbook-panel-label-en" lang="en">Form</span>
+              </span>
+              <h3 id="guestbook-form-title">방명록 작성</h3>
+            </header>
 
             {status && (
               <div className={`form-status${status.type === 'error' ? ' form-status--error' : ''}`} role="status">
@@ -119,26 +129,41 @@ export default function GuestbookSection({ initialGuestbook = [] }) {
                 {loading ? '등록 중…' : '메시지 남기기'}
               </button>
             </form>
-          </div>
+          </section>
 
-          <div className="message-list" aria-live="polite" aria-label="방명록 메시지">
-            {guestbook.map((entry) => (
-              <article className="message-card" key={entry.id}>
-                <div className="message-emoji" aria-hidden="true">{entry.emoji || '💬'}</div>
-                <div className="message-content">
-                  <div className="message-head">
-                    <span className="message-author">{entry.author}</span>
-                    <time className="message-date">{entry.date}</time>
+          <section className="guestbook-testimonials" aria-labelledby="guestbook-testimonials-title">
+            <header className="testimonial-head">
+              <div>
+                <span className="guestbook-panel-label">
+                  <span>방문자 메시지</span>
+                  <span className="guestbook-panel-label-en" lang="en">Testimonials</span>
+                </span>
+                <h3 id="guestbook-testimonials-title">도착한 이야기</h3>
+              </div>
+              <span className="testimonial-count" aria-label={`메시지 ${guestbook.length}개`}>
+                {String(guestbook.length).padStart(2, '0')}
+              </span>
+            </header>
+
+            <div className="message-list" aria-live="polite" aria-label="방명록 메시지">
+              {guestbook.map((entry) => (
+                <article className="message-card" key={entry.id}>
+                  <div className="message-emoji" aria-hidden="true">{entry.emoji || '💬'}</div>
+                  <div className="message-content">
+                    <div className="message-head">
+                      <span className="message-author">{entry.author}</span>
+                      <time className="message-date">{entry.date}</time>
+                    </div>
+                    <p>{entry.message}</p>
                   </div>
-                  <p>{entry.message}</p>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))}
 
-            {guestbook.length === 0 && (
-              <p className="empty-state">아직 메시지가 없습니다. 첫 번째 인사를 남겨주세요.</p>
-            )}
-          </div>
+              {guestbook.length === 0 && (
+                <p className="empty-state">아직 메시지가 없습니다. 첫 번째 인사를 남겨주세요.</p>
+              )}
+            </div>
+          </section>
         </div>
       </div>
     </section>
