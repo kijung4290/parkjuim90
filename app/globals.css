@@ -943,6 +943,33 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .public-site .project-detail-button { align-items: center; color: var(--forest-dark); display: inline-flex; font-size: 0.78rem; font-weight: 780; gap: 6px; justify-content: center; }
 .public-site .project-detail-button--showcase { background: var(--apricot); border-radius: 4px 11px 11px 11px; color: #2d1811; min-height: 40px; padding: 9px 14px; }
 
+/* 대표 도구 카드는 2초마다 다음 도구로 넘어갑니다. */
+.public-site .archive-showcase-shell { margin-bottom: clamp(62px, 8vw, 96px); }
+.public-site .archive-showcase-shell .archive-showcase { animation: archive-showcase-enter 0.4s ease both; margin-bottom: 0; }
+.public-site .archive-showcase-controls { align-items: center; display: flex; gap: 16px; justify-content: space-between; padding: 18px 2px 0; }
+.public-site .archive-showcase-progress { align-items: center; color: var(--muted-light); display: flex; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; gap: 12px; }
+.public-site .archive-showcase-track { background: var(--line); height: 2px; overflow: hidden; width: min(30vw, 300px); }
+.public-site .archive-showcase-track > span { background: var(--apricot); display: block; height: 100%; transform: scaleX(0); transform-origin: left; }
+.public-site .archive-showcase-track > span.is-running { animation: hero-progress var(--slide-duration) linear both; }
+.public-site .archive-showcase-buttons { display: flex; gap: 7px; }
+.public-site .archive-showcase-buttons button {
+  align-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--forest-dark);
+  display: flex;
+  height: 38px;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  width: 38px;
+}
+.public-site .archive-showcase-buttons button:hover { background: var(--surface); border-color: var(--forest); }
+@keyframes archive-showcase-enter { from { opacity: 0.25; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .public-site .archive-showcase-shell .archive-showcase { animation: none; }
+  .public-site .archive-showcase-track > span.is-running { animation: none; transform: scaleX(1); }
+}
+
 .public-site .archive-index { border-top: 4px solid var(--ink); }
 .public-site .archive-index__head { align-items: end; display: flex; gap: 28px; justify-content: space-between; padding: 26px 0 22px; }
 .public-site .archive-index__eyebrow { color: var(--forest); font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; }
@@ -1263,6 +1290,9 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .public-site .footer-build-note { color: #85bdae; }
 
 @media (max-width: 640px) {
+  .public-site .archive-showcase-controls { align-items: flex-start; flex-direction: column-reverse; gap: 14px; }
+  .public-site .archive-showcase-track { width: 90px; }
+  .public-site .archive-showcase-buttons button { height: 36px; width: 36px; }
   .public-site .brand-role > span:first-child { display: none; }
   .public-site .story-card-head { gap: 10px; }
   .public-site .story-meta { align-items: flex-end; flex-direction: column; }

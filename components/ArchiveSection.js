@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, CheckCircle2, ExternalLink, Search, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, Pause, Play, Search, X } from 'lucide-react';
 import { ProjectIcon } from '@/components/projectIcons';
 import { PROJECT_CATEGORIES } from '@/lib/projectMeta';
 
 const CATEGORIES = [{ id: 'all', label: '전체' }, ...PROJECT_CATEGORIES];
 const INITIAL_INDEX_SIZE = 11;
+const SHOWCASE_INTERVAL = 2000;
+
+const padNumber = (value) => String(value).padStart(2, '0');
 
 const FOCUSABLE = 'a[href], button:not(:disabled), input, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -50,6 +53,9 @@ export default function ArchiveSection({ projects = [] }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isIndexExpanded, setIsIndexExpanded] = useState(false);
+  const [showcaseIndex, setShowcaseIndex] = useState(0);
+  const [showcasePlaying, setShowcasePlaying] = useState(true);
+  const [showcaseHovered, setShowcaseHovered] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const modalRef = useRef(null);
   const selectedProjectLinks = getProjectLinks(selectedProject);
@@ -90,22 +96,26 @@ export default function ArchiveSection({ projects = [] }) {
   }, [selectedProject]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
-  const filteredProjects = projects.filter((project) => {
+  const filteredProjects = useMemo(() => projects.filter((project) => {
     const matchesCategory = activeCategory === 'all' || project.category === activeCategory;
     const searchableText = [project.title, project.summary, ...(project.techStack || [])]
       .filter(Boolean)
       .join(' ')
       .toLowerCase();
     return matchesCategory && searchableText.includes(normalizedQuery);
-  });
+  }), [projects, activeCategory, normalizedQuery]);
   const isDefaultView = activeCategory === 'all' && normalizedQuery.length === 0;
   const activeCategoryLabel = CATEGORIES.find((category) => category.id === activeCategory)?.label || '전체';
-  const spotlightProject = isDefaultView
-    ? filteredProjects.find((project) => project.title?.includes('가계도'))
-    : null;
-  const indexProjects = spotlightProject
-    ? filteredProjects.filter((project) => project !== spotlightProject)
-    : filteredProjects;
+
+  // 대표 도구 카드는 현재 필터 결과 전체를 순서대로 돌립니다.
+  const showcaseCount = filteredProjects.length;
+  const safeShowcaseIndex = showcaseCount > 0 ? Math.min(showcaseIndex, showcaseCount - 1) : 0;
+  const showcaseProject = filteredProjects[safeShowcaseIndex] || null;
+  const canRotateShowcase = showcaseCount > 1;
+  // 마우스를 올렸거나 상세 모달이 열려 있으면 읽는 흐름을 끊지 않도록 멈춥니다.
+  const isShowcaseRotating = canRotateShowcase && showcasePlaying && !showcaseHovered && !selectedProject;
+
+  const indexProjects = filteredProjects;
   const remainingProjectCount = Math.max(indexProjects.length - INITIAL_INDEX_SIZE, 0);
   const visibleIndexProjects = isDefaultView && !isIndexExpanded
     ? indexProjects.slice(0, INITIAL_INDEX_SIZE)
@@ -120,6 +130,43 @@ export default function ArchiveSection({ projects = [] }) {
     setSearchQuery(value);
     setIsIndexExpanded(false);
   };
+
+  const showShowcaseSlide = (index) => {
+    if (showcaseCount === 0) return;
+    setShowcaseIndex((index + showcaseCount) % showcaseCount);
+  };
+
+  // 동작 줄이기를 켠 사용자에게는 자동 전환을 하지 않습니다.
+  useEffect(() => {
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncPlayback = () => setShowcasePlaying(!motionPreference.matches);
+
+    syncPlayback();
+
+    if (motionPreference.addEventListener) {
+      motionPreference.addEventListener('change', syncPlayback);
+      return () => motionPreference.removeEventListener('change', syncPlayback);
+    }
+
+    motionPreference.addListener(syncPlayback);
+    return () => motionPreference.removeListener(syncPlayback);
+  }, []);
+
+  // 필터나 검색어가 바뀌면 첫 번째 도구부터 다시 보여줍니다.
+  useEffect(() => {
+    setShowcaseIndex(0);
+  }, [activeCategory, normalizedQuery]);
+
+  // 수동으로 넘긴 뒤에도 남은 시간이 아니라 2초를 새로 세도록 타이머를 다시 겁니다.
+  useEffect(() => {
+    if (!isShowcaseRotating) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setShowcaseIndex((current) => (current + 1) % showcaseCount);
+    }, SHOWCASE_INTERVAL);
+
+    return () => window.clearTimeout(timer);
+  }, [isShowcaseRotating, safeShowcaseIndex, showcaseCount]);
 
   return (
     <section className="section section--white" id="archive" aria-labelledby="archive-title">
@@ -169,45 +216,110 @@ export default function ArchiveSection({ projects = [] }) {
           </span>
         </div>
 
-        {spotlightProject && (
-          <article className="archive-showcase" aria-labelledby="archive-showcase-title">
-            <div className="archive-showcase__visual" aria-hidden="true">
-              <ProjectIcon name={spotlightProject.icon} size={72} />
-            </div>
-
-            <div className="archive-showcase__body">
-              <div className="archive-showcase__eyebrow">
-                <span>Spotlight</span>
-                {spotlightProject.badge && <span>{spotlightProject.badge}</span>}
+        {showcaseProject && (
+          <div
+            className="archive-showcase-shell"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="대표 도구 슬라이드"
+          >
+            {/* 정지 판정은 카드 본문에만 둡니다. 조작부까지 포함하면 재생 버튼이 먹지 않습니다. */}
+            <article
+              className="archive-showcase"
+              aria-labelledby="archive-showcase-title"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${safeShowcaseIndex + 1} / ${showcaseCount}`}
+              key={showcaseProject.id}
+              onMouseEnter={() => setShowcaseHovered(true)}
+              onMouseLeave={() => setShowcaseHovered(false)}
+              onFocus={() => setShowcaseHovered(true)}
+              onBlur={() => setShowcaseHovered(false)}
+            >
+              <div className="archive-showcase__visual" aria-hidden="true">
+                <ProjectIcon name={showcaseProject.icon} size={72} />
               </div>
-              <p className="archive-showcase__category">{spotlightProject.categoryLabel}</p>
-              <h3 className="archive-showcase__title" id="archive-showcase-title">{spotlightProject.title}</h3>
-              <p className="archive-showcase__summary">{spotlightProject.summary}</p>
 
-              {spotlightProject.highlights?.length > 0 && (
-                <ul className="archive-showcase__highlights">
-                  {spotlightProject.highlights.slice(0, 3).map((highlight) => (
-                    <li key={highlight}>
-                      <CheckCircle2 size={15} aria-hidden="true" />
-                      <span>{highlight}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="archive-showcase__body">
+                <div className="archive-showcase__eyebrow">
+                  <span>
+                    {canRotateShowcase
+                      ? `Now showing ${padNumber(safeShowcaseIndex + 1)} / ${padNumber(showcaseCount)}`
+                      : 'Now showing'}
+                  </span>
+                  {showcaseProject.badge && <span>{showcaseProject.badge}</span>}
+                </div>
+                <p className="archive-showcase__category">{showcaseProject.categoryLabel}</p>
+                <h3 className="archive-showcase__title" id="archive-showcase-title">{showcaseProject.title}</h3>
+                <p className="archive-showcase__summary">{showcaseProject.summary}</p>
 
-              <div className="archive-showcase__actions">
-                <ProjectDirectLinks project={spotlightProject} className="archive-showcase__links" />
-                <button
-                  className="project-detail-button project-detail-button--showcase"
-                  type="button"
-                  onClick={() => setSelectedProject(spotlightProject)}
-                  aria-label={`${spotlightProject.title} 자세히 보기`}
-                >
-                  자세히 보기 <ArrowRight size={16} aria-hidden="true" />
-                </button>
+                {showcaseProject.highlights?.length > 0 && (
+                  <ul className="archive-showcase__highlights">
+                    {showcaseProject.highlights.slice(0, 3).map((highlight) => (
+                      <li key={highlight}>
+                        <CheckCircle2 size={15} aria-hidden="true" />
+                        <span>{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="archive-showcase__actions">
+                  <ProjectDirectLinks project={showcaseProject} className="archive-showcase__links" />
+                  <button
+                    className="project-detail-button project-detail-button--showcase"
+                    type="button"
+                    onClick={() => setSelectedProject(showcaseProject)}
+                    aria-label={`${showcaseProject.title} 자세히 보기`}
+                  >
+                    자세히 보기 <ArrowRight size={16} aria-hidden="true" />
+                  </button>
+                </div>
               </div>
-            </div>
-          </article>
+            </article>
+
+            {canRotateShowcase && (
+              <div className="archive-showcase-controls">
+                <div className="archive-showcase-progress" aria-hidden="true">
+                  <span>{padNumber(safeShowcaseIndex + 1)}</span>
+                  <div className="archive-showcase-track">
+                    <span
+                      key={`${safeShowcaseIndex}-${isShowcaseRotating}`}
+                      className={isShowcaseRotating ? 'is-running' : ''}
+                      style={{ '--slide-duration': `${SHOWCASE_INTERVAL}ms` }}
+                    />
+                  </div>
+                  <span>{padNumber(showcaseCount)}</span>
+                </div>
+
+                <div className="archive-showcase-buttons" role="group" aria-label="대표 도구 슬라이드 제어">
+                  <button
+                    type="button"
+                    onClick={() => showShowcaseSlide(safeShowcaseIndex - 1)}
+                    aria-label="이전 도구 보기"
+                  >
+                    <ArrowLeft size={17} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowcasePlaying((current) => !current)}
+                    aria-label={showcasePlaying ? '도구 자동 전환 일시 정지' : '도구 자동 전환 재생'}
+                  >
+                    {showcasePlaying
+                      ? <Pause size={16} aria-hidden="true" />
+                      : <Play size={16} aria-hidden="true" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => showShowcaseSlide(safeShowcaseIndex + 1)}
+                    aria-label="다음 도구 보기"
+                  >
+                    <ArrowRight size={17} aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {filteredProjects.length > 0 ? (
