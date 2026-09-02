@@ -1,71 +1,151 @@
-import { ArrowRight, Globe2, MessageCircle } from 'lucide-react';
+'use client';
 
-const WORKFLOW_STEPS = [
-  '현장의 문제를 가까이서 관찰',
-  '복잡한 업무 흐름을 단순하게 정리',
-  '누구나 바로 쓰는 도구로 구현',
-  '사람에게 돌아가는 시간을 확인',
-];
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, ArrowRight, Pause, Play, Quote } from 'lucide-react';
+import { DEFAULT_HERO } from '@/lib/defaults';
+import { getVideoEmbedUrl } from '@/lib/heroMedia';
 
-export default function HeroSection({ profile }) {
-  const stats = profile?.stats || [];
+const TYPE_LABELS = {
+  image: 'FIELD PHOTO',
+  video: 'FIELD FILM',
+  quote: 'FIELD NOTE',
+};
+
+function SlideMedia({ slide, shouldPlay }) {
+  if (slide.type === 'quote') {
+    return (
+      <div className="hero-slide-quote-mark" aria-hidden="true">
+        <Quote size={92} strokeWidth={1.1} />
+      </div>
+    );
+  }
+
+  if (slide.type === 'image') {
+    return <img className="hero-slide-asset" src={slide.url} alt={slide.alt || ''} fetchPriority="high" />;
+  }
+
+  const embedUrl = getVideoEmbedUrl(slide.url, { autoplay: shouldPlay, loop: true, controls: false });
+  if (embedUrl) {
+    return (
+      <iframe
+        className="hero-slide-asset hero-slide-embed"
+        src={embedUrl}
+        title={slide.alt || slide.title || '소개 영상'}
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
 
   return (
-    <section className="hero" aria-labelledby="hero-title">
-      <div className="container">
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <p className="hero-domain">
-              <Globe2 size={15} aria-hidden="true" />
-              {profile?.domain}
-            </p>
-            <h1 className="hero-title" id="hero-title">
-              사람에게 쓰는 시간은 늘리고,<br />
-              <strong>반복 행정은 줄입니다.</strong>
-            </h1>
-            <p className="hero-intro">{profile?.introduction}</p>
-            <div className="hero-actions">
-              <a className="button button--primary" href="#archive">
-                만든 도구 살펴보기 <ArrowRight size={17} aria-hidden="true" />
-              </a>
-              <a className="button button--secondary" href="#guestbook">
-                방명록 남기기 <MessageCircle size={17} aria-hidden="true" />
-              </a>
+    <video
+      className="hero-slide-asset"
+      src={slide.url}
+      poster={slide.poster || undefined}
+      autoPlay={shouldPlay}
+      muted
+      loop
+      playsInline
+      preload={shouldPlay ? 'auto' : 'metadata'}
+      aria-label={slide.alt || slide.title || '소개 영상'}
+    >
+      브라우저에서 동영상 재생을 지원하지 않습니다.
+    </video>
+  );
+}
+
+export default function HeroSection({ profile, hero }) {
+  const slides = useMemo(() => {
+    const configured = Array.isArray(hero?.slides) ? hero.slides : [];
+    const visible = configured.filter((slide) => (
+      slide?.type === 'quote'
+        ? Boolean(slide.title || slide.description)
+        : Boolean(slide?.url)
+    ));
+    return visible.length ? visible : [DEFAULT_HERO.slides[0]];
+  }, [hero?.slides]);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [playing, setPlaying] = useState(Boolean(hero?.autoplay));
+  const activeSlide = slides[activeIndex] || slides[0];
+  const interval = Math.max(4000, Number(hero?.interval) || DEFAULT_HERO.interval);
+  const shouldAutoPlay = playing && slides.length > 1;
+
+  useEffect(() => {
+    setPlaying(Boolean(hero?.autoplay));
+  }, [hero?.autoplay]);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setPlaying(false);
+  }, []);
+
+  useEffect(() => {
+    if (activeIndex >= slides.length) setActiveIndex(0);
+  }, [activeIndex, slides.length]);
+
+  useEffect(() => {
+    if (!shouldAutoPlay) return undefined;
+    const timer = window.setTimeout(() => {
+      setActiveIndex((current) => (current + 1) % slides.length);
+    }, interval);
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, interval, shouldAutoPlay, slides.length]);
+
+  const showSlide = (index) => setActiveIndex((index + slides.length) % slides.length);
+
+  return (
+    <section className="hero hero--slider" aria-label="주요 활동 소개">
+      <div className={`hero-stage hero-stage--${activeSlide.type}`}>
+        <SlideMedia key={`${activeSlide.id}-${playing}`} slide={activeSlide} shouldPlay={playing} />
+        <div className="hero-slide-wash" aria-hidden="true" />
+
+        <div className="container hero-slide-content">
+          <div className="hero-slide-copy" key={activeSlide.id}>
+            <span className="hero-slide-kicker">
+              {activeSlide.eyebrow || TYPE_LABELS[activeSlide.type]}
+            </span>
+            <h1 id="hero-title">{activeSlide.title}</h1>
+            {activeSlide.description && <p>{activeSlide.description}</p>}
+            <div className="hero-slide-actions">
+              <a className="button button--hero" href="#archive">만든 도구 살펴보기 <ArrowRight size={17} /></a>
+              <a className="button button--hero-quiet" href="#contact">협업 문의하기</a>
             </div>
           </div>
 
-          <aside className="field-note" aria-label="도구를 만드는 업무 흐름">
-            <div className="field-note-header">
-              <span>Field note</span>
-              <span>WONJU · 2026</span>
+          <div className="hero-slider-controls" aria-label="슬라이드 이동">
+            <div className="hero-slide-progress" aria-hidden="true">
+              <span>{String(activeIndex + 1).padStart(2, '0')}</span>
+              <div className="hero-progress-track">
+                <span key={`${activeIndex}-${playing}`} className={shouldAutoPlay ? 'is-running' : ''} style={{ '--slide-duration': `${interval}ms` }} />
+              </div>
+              <span>{String(slides.length).padStart(2, '0')}</span>
             </div>
-            <h2 className="field-note-title">현장에서 발견한 불편을 작동하는 도구로 바꿉니다.</h2>
-            <ol className="workflow">
-              {WORKFLOW_STEPS.map((step, index) => (
-                <li className="workflow-step" key={step}>
-                  <span>{String(index + 1).padStart(2, '0')}</span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ol>
-            <span className="field-note-stamp">BUILT FOR CARE</span>
-          </aside>
-        </div>
 
-        {stats.length > 0 && (
+            {slides.length > 1 && (
+              <div className="hero-slide-buttons">
+                <button type="button" onClick={() => showSlide(activeIndex - 1)} aria-label="이전 슬라이드"><ArrowLeft size={18} /></button>
+                <button type="button" onClick={() => setPlaying((current) => !current)} aria-label={playing ? '자동 슬라이드 일시정지' : '자동 슬라이드 재생'}>
+                  {playing ? <Pause size={17} /> : <Play size={17} />}
+                </button>
+                <button type="button" onClick={() => showSlide(activeIndex + 1)} aria-label="다음 슬라이드"><ArrowRight size={18} /></button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {profile?.stats?.length > 0 && (
+        <div className="container">
           <div className="stats-strip" aria-label="주요 활동 지표">
-            {stats.map((stat) => (
+            {profile.stats.map((stat) => (
               <div className="stat" key={stat.label}>
-                <div className="stat-value">
-                  {stat.value}
-                  <span className="stat-unit">{stat.unit}</span>
-                </div>
+                <div className="stat-value">{stat.value}<span className="stat-unit">{stat.unit}</span></div>
                 <div className="stat-label">{stat.label}</div>
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </section>
   );
 }

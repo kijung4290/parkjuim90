@@ -10,11 +10,14 @@ import {
     ChevronUp,
     Compass,
     ExternalLink,
+    Film,
     FolderKanban,
+    Image as ImageIcon,
     LogOut,
     MessagesSquare,
     NotebookText,
     Plus,
+    Quote,
     RotateCcw,
     Save,
     Settings,
@@ -24,10 +27,13 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { PROJECT_CATEGORIES, getCategoryLabel } from '@/lib/projectMeta';
+import { DEFAULT_HERO } from '@/lib/defaults';
+import { getVideoEmbedUrl } from '@/lib/heroMedia';
 import { PROJECT_ICON_NAMES } from '@/components/projectIcons';
 import './admin.css';
 
 const SECTIONS = [
+    { id: 'hero', label: '첫 화면 슬라이드', description: '영상·현장 사진·글귀', icon: ImageIcon },
     { id: 'profile', label: '기본 정보', description: '이름, 소개, 연락처', icon: UserRound },
     { id: 'stats', label: '주요 지표', description: '성과를 보여주는 숫자', icon: BarChart3 },
     { id: 'philosophy', label: '일하는 원칙', description: '나를 설명하는 가치', icon: Compass },
@@ -40,6 +46,22 @@ const SECTIONS = [
 
 const toLines = (value) => (Array.isArray(value) ? value.join('\n') : '');
 const fromLines = (text) => text.split('\n').map((line) => line.trim()).filter(Boolean);
+const HERO_TYPE_LABELS = { image: '이미지', video: '동영상', quote: '글귀' };
+
+const normalizePortfolio = (json) => ({
+    ...json,
+    hero: {
+        ...DEFAULT_HERO,
+        ...(json.hero || {}),
+        slides: Array.isArray(json.hero?.slides) ? json.hero.slides : DEFAULT_HERO.slides,
+    },
+    profile: { stats: [], ...(json.profile || {}) },
+    philosophy: json.philosophy || [],
+    projects: json.projects || [],
+    experiences: json.experiences || [],
+    stories: json.stories || [],
+    guestbook: json.guestbook || [],
+});
 
 /** 라벨과 입력칸을 함께 묶어주는 작은 헬퍼입니다. */
 function Field({ label, hint, wide = false, children }) {
@@ -48,6 +70,36 @@ function Field({ label, hint, wide = false, children }) {
             <span>{label}{hint && <em>{hint}</em>}</span>
             {children}
         </label>
+    );
+}
+
+function SlidePreview({ slide }) {
+    const embedUrl = slide.type === 'video'
+        ? getVideoEmbedUrl(slide.url, { autoplay: false, loop: false })
+        : null;
+
+    return (
+        <div className="admin-media-preview">
+            {slide.type === 'quote' ? (
+                <div className="admin-quote-preview">
+                    <Quote size={28} aria-hidden="true" />
+                    <strong>{slide.title || '글귀를 입력해주세요.'}</strong>
+                    {slide.description && <span>{slide.description}</span>}
+                </div>
+            ) : !slide.url ? (
+                <div className="admin-media-empty">
+                    {slide.type === 'video' ? <Film size={26} /> : <ImageIcon size={26} />}
+                    <strong>미디어 주소를 입력해주세요</strong>
+                    <span>주소를 입력하기 전까지 이 슬라이드는 사이트에서 숨겨집니다.</span>
+                </div>
+            ) : slide.type === 'image' ? (
+                <img src={slide.url} alt="히어로 이미지 미리보기" />
+            ) : embedUrl ? (
+                <iframe src={embedUrl} title="히어로 동영상 미리보기" allow="encrypted-media; picture-in-picture" allowFullScreen />
+            ) : (
+                <video src={slide.url} poster={slide.poster || undefined} controls preload="metadata" />
+            )}
+        </div>
     );
 }
 
@@ -82,7 +134,7 @@ export default function AdminPage() {
     const [savedSnapshot, setSavedSnapshot] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null); // { type: 'ok' | 'error', text }
-    const [activeSection, setActiveSection] = useState('profile');
+    const [activeSection, setActiveSection] = useState('hero');
 
     const isLoggedIn = Boolean(session);
 
@@ -114,15 +166,7 @@ export default function AdminPage() {
                 if (!response.ok) throw new Error('불러오기 실패');
                 const json = await response.json();
                 if (cancelled) return;
-                const normalized = {
-                    ...json,
-                    profile: { stats: [], ...(json.profile || {}) },
-                    philosophy: json.philosophy || [],
-                    projects: json.projects || [],
-                    experiences: json.experiences || [],
-                    stories: json.stories || [],
-                    guestbook: json.guestbook || [],
-                };
+                const normalized = normalizePortfolio(json);
                 setData(normalized);
                 setSavedSnapshot(JSON.stringify(normalized));
             } catch (error) {
@@ -201,15 +245,7 @@ export default function AdminPage() {
             const refreshed = await fetch('/api/portfolio');
             if (!refreshed.ok) throw new Error('초기화 후 데이터를 다시 불러오지 못했습니다.');
             const json = await refreshed.json();
-            const normalized = {
-                ...json,
-                profile: { stats: [], ...(json.profile || {}) },
-                philosophy: json.philosophy || [],
-                projects: json.projects || [],
-                experiences: json.experiences || [],
-                stories: json.stories || [],
-                guestbook: json.guestbook || [],
-            };
+            const normalized = normalizePortfolio(json);
             setData(normalized);
             setSavedSnapshot(JSON.stringify(normalized));
             notify('ok', '기본 데이터로 되돌렸습니다.');
@@ -220,6 +256,56 @@ export default function AdminPage() {
     };
 
     /* ── 데이터 수정 헬퍼 ───────────────────────────── */
+    const updateHero = (key, value) =>
+        setData((prev) => ({ ...prev, hero: { ...prev.hero, [key]: value } }));
+
+    const mutateHeroSlides = (mutate) =>
+        setData((prev) => ({
+            ...prev,
+            hero: { ...prev.hero, slides: mutate([...(prev.hero.slides || [])]) },
+        }));
+
+    const updateHeroSlide = (index, patch) =>
+        mutateHeroSlides((slides) => {
+            slides[index] = { ...slides[index], ...patch };
+            return slides;
+        });
+
+    const addHeroSlide = (type) => {
+        const typeLabel = HERO_TYPE_LABELS[type];
+        mutateHeroSlides((slides) => [...slides, {
+            id: `hero-${type}-${Date.now()}`,
+            type,
+            eyebrow: type === 'image' ? 'LECTURE & COMMUNITY' : type === 'video' ? 'FIELD FILM' : 'FIELD NOTE',
+            title: '',
+            description: '',
+            url: '',
+            poster: '',
+            alt: '',
+        }]);
+        notify('ok', `${typeLabel} 슬라이드를 추가했습니다.`);
+        window.setTimeout(() => {
+            const items = document.querySelectorAll('#hero details.admin-item');
+            const newItem = items[items.length - 1];
+            if (!newItem) return;
+            newItem.open = true;
+            newItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 0);
+    };
+
+    const removeHeroSlide = (index) => {
+        if (!window.confirm('이 슬라이드를 삭제할까요?')) return;
+        mutateHeroSlides((slides) => slides.filter((_, slideIndex) => slideIndex !== index));
+    };
+
+    const moveHeroSlide = (index, delta) =>
+        mutateHeroSlides((slides) => {
+            const target = index + delta;
+            if (target < 0 || target >= slides.length) return slides;
+            [slides[index], slides[target]] = [slides[target], slides[index]];
+            return slides;
+        });
+
     const updateProfile = (key, value) =>
         setData((prev) => ({ ...prev, profile: { ...prev.profile, [key]: value } }));
 
@@ -257,6 +343,7 @@ export default function AdminPage() {
     };
 
     const getSectionCount = (id) => {
+        if (id === 'hero') return heroSlides.length;
         if (id === 'stats') return stats.length;
         if (['philosophy', 'projects', 'experiences', 'stories', 'guestbook'].includes(id)) return data[id].length;
         return null;
@@ -312,6 +399,8 @@ export default function AdminPage() {
 
     const profile = data.profile || {};
     const stats = profile.stats || [];
+    const hero = data.hero || DEFAULT_HERO;
+    const heroSlides = hero.slides || [];
 
     return (
         <div className="admin-shell">
@@ -372,6 +461,102 @@ export default function AdminPage() {
                         <h1>{SECTIONS.find((section) => section.id === activeSection)?.label} 수정</h1>
                         <p>여기에서 {SECTIONS.find((section) => section.id === activeSection)?.description} 내용을 수정합니다. 입력한 내용은 저장하기를 눌러야 사이트에 반영됩니다.</p>
                     </div>
+                    {/* 첫 화면 */}
+                    <section className={`admin-card${activeSection === 'hero' ? ' is-active' : ''}`} id="hero">
+                        <div className="admin-card-head">
+                            <div>
+                                <h2>첫 화면 슬라이드</h2>
+                                <p>위에 있는 슬라이드부터 영상·사진·글귀가 자동으로 재생됩니다.</p>
+                            </div>
+                            <div className="admin-add-group">
+                                <button className="button button--soft button--small" type="button" onClick={() => addHeroSlide('video')}><Film size={16} /> 영상</button>
+                                <button className="button button--soft button--small" type="button" onClick={() => addHeroSlide('image')}><ImageIcon size={16} /> 이미지</button>
+                                <button className="button button--soft button--small" type="button" onClick={() => addHeroSlide('quote')}><Quote size={16} /> 글귀</button>
+                            </div>
+                        </div>
+
+                        <div className="admin-hero-settings">
+                            <label className="admin-check">
+                                <input type="checkbox" checked={Boolean(hero.autoplay)} onChange={(e) => updateHero('autoplay', e.target.checked)} />
+                                슬라이드 자동 재생
+                            </label>
+                            <Field label="슬라이드 전환 시간">
+                                <select value={Number(hero.interval) || 7000} onChange={(e) => updateHero('interval', Number(e.target.value))}>
+                                    <option value="5000">5초</option>
+                                    <option value="7000">7초</option>
+                                    <option value="10000">10초</option>
+                                    <option value="15000">15초</option>
+                                </select>
+                            </Field>
+                        </div>
+
+                        <p className="admin-slide-guide">이미지·영상은 주소를, 글귀는 내용을 입력해야 사이트에 표시됩니다. 준비 중인 빈 슬라이드는 자동으로 숨겨집니다.</p>
+
+                        <div className="admin-list admin-slide-list">
+                            {heroSlides.map((slide, index) => (
+                                <ItemCard
+                                    label={`${HERO_TYPE_LABELS[slide.type] || '일반'} 슬라이드`}
+                                    title={slide.title}
+                                    key={slide.id || index}
+                                    index={index}
+                                    total={heroSlides.length}
+                                    onMove={(slideIndex, delta) => moveHeroSlide(slideIndex, delta)}
+                                    onRemove={(slideIndex) => removeHeroSlide(slideIndex)}
+                                >
+                                    <div className="admin-slide-editor">
+                                        <div className="admin-grid">
+                                            <Field label="작은 분류 문구" hint="슬라이드 위쪽에 작게 표시">
+                                                <input value={slide.eyebrow || ''} onChange={(e) => updateHeroSlide(index, { eyebrow: e.target.value })} placeholder="예: LECTURE & COMMUNITY" />
+                                            </Field>
+                                            <Field label="슬라이드 종류">
+                                                <select value={slide.type || 'quote'} onChange={(e) => updateHeroSlide(index, { type: e.target.value })}>
+                                                    <option value="video">동영상</option>
+                                                    <option value="image">이미지</option>
+                                                    <option value="quote">글귀</option>
+                                                </select>
+                                            </Field>
+                                            <Field label={slide.type === 'quote' ? '글귀' : '제목'} wide>
+                                                <textarea value={slide.title || ''} onChange={(e) => updateHeroSlide(index, { title: e.target.value })} placeholder={slide.type === 'quote' ? '첫 화면에 크게 보여줄 글귀를 입력해주세요.' : '사진이나 영상을 설명하는 제목'} />
+                                            </Field>
+                                            <Field label="설명" wide>
+                                                <textarea value={slide.description || ''} onChange={(e) => updateHeroSlide(index, { description: e.target.value })} placeholder="제목 아래에 표시할 짧은 설명" />
+                                            </Field>
+                                            {slide.type !== 'quote' && (
+                                                <Field
+                                                    label={slide.type === 'video' ? '동영상 주소' : '이미지 주소'}
+                                                    hint={slide.type === 'video' ? 'YouTube·Vimeo·MP4·WebM 지원' : 'JPG·PNG·WebP 권장'}
+                                                    wide
+                                                >
+                                                    <input
+                                                        value={slide.url || ''}
+                                                        onChange={(e) => updateHeroSlide(index, { url: e.target.value })}
+                                                        placeholder={slide.type === 'video' ? 'https://youtu.be/... 또는 /videos/intro.mp4' : 'https://... 또는 /images/lecture.webp'}
+                                                    />
+                                                </Field>
+                                            )}
+                                            {slide.type === 'video' && (
+                                                <Field label="영상 표지 이미지" hint="직접 동영상 파일일 때 사용" wide>
+                                                    <input value={slide.poster || ''} onChange={(e) => updateHeroSlide(index, { poster: e.target.value })} placeholder="/images/video-poster.webp" />
+                                                </Field>
+                                            )}
+                                            {slide.type !== 'quote' && (
+                                                <Field label="대체 설명" hint="사진·영상을 볼 수 없는 방문자에게 전달" wide>
+                                                    <input value={slide.alt || ''} onChange={(e) => updateHeroSlide(index, { alt: e.target.value })} placeholder="강의 중인 사회복지사와 참여자들의 모습" />
+                                                </Field>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <span className="admin-preview-label">슬라이드 미리보기 · 가로 이미지 권장</span>
+                                            <SlidePreview slide={slide} />
+                                        </div>
+                                    </div>
+                                </ItemCard>
+                            ))}
+                            {heroSlides.length === 0 && <p className="admin-empty">슬라이드가 없습니다. 위 버튼에서 영상, 이미지 또는 글귀를 추가해주세요.</p>}
+                        </div>
+                    </section>
+
                     {/* 기본 정보 */}
                     <section className={`admin-card${activeSection === 'profile' ? ' is-active' : ''}`} id="profile">
                         <div className="admin-card-head">

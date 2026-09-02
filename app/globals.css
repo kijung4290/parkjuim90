@@ -246,6 +246,83 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .workflow-step span:first-child { color: #b6d8ca; font-family: var(--font-mono); font-size: 0.72rem; }
 .workflow-step span:last-child { font-size: 0.94rem; font-weight: 700; }
 .field-note-stamp { border: 1px solid rgba(233, 140, 91, 0.8); border-radius: var(--radius-pill); bottom: 22px; color: #ffc29f; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; padding: 7px 11px; position: absolute; right: 24px; transform: rotate(-6deg); }
+
+/* Hero slideshow — 강의·현장 사진, 영상, 글귀를 한 무대에서 보여줍니다. */
+.hero.hero--slider { background: var(--forest-dark); padding: 0; }
+.hero.hero--slider::after { display: none; }
+.hero-stage {
+  background: #173e34;
+  color: var(--white);
+  min-height: clamp(610px, 78vh, 780px);
+  overflow: hidden;
+  position: relative;
+}
+.hero-stage--quote {
+  background:
+    radial-gradient(circle at 82% 24%, rgba(233, 140, 91, 0.2), transparent 25%),
+    linear-gradient(135deg, #173e34 0%, #245b4b 58%, #17483b 100%);
+}
+.hero-stage--quote::before {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  content: '';
+  inset: 0;
+  position: absolute;
+}
+.hero-slide-asset { border: 0; height: 100%; inset: 0; object-fit: cover; position: absolute; width: 100%; }
+.hero-slide-embed { background: #0e1e19; }
+.hero-slide-wash {
+  background: linear-gradient(90deg, rgba(10, 25, 20, 0.86) 0%, rgba(10, 25, 20, 0.54) 48%, rgba(10, 25, 20, 0.13) 82%), linear-gradient(0deg, rgba(8, 18, 15, 0.6), transparent 45%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+.hero-stage--quote .hero-slide-wash { background: linear-gradient(90deg, rgba(10, 25, 20, 0.18), transparent 70%); }
+.hero-slide-quote-mark { color: rgba(255, 255, 255, 0.09); position: absolute; right: clamp(28px, 9vw, 132px); top: clamp(100px, 17vh, 170px); transform: rotate(4deg); }
+.hero-slide-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: clamp(610px, 78vh, 780px);
+  padding-bottom: 42px;
+  padding-top: 118px;
+  position: relative;
+  z-index: 2;
+}
+.hero-slide-copy { animation: hero-slide-enter 0.65s both cubic-bezier(0.2, 0.8, 0.2, 1); max-width: 840px; }
+.hero-slide-kicker {
+  align-items: center;
+  color: #c9e4d9;
+  display: inline-flex;
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  font-weight: 750;
+  gap: 9px;
+  letter-spacing: 0.09em;
+  margin-bottom: 22px;
+}
+.hero-slide-kicker::before { background: var(--apricot); border-radius: 50%; content: ''; height: 7px; width: 7px; }
+.hero-slide-copy h1 { font-family: var(--font-display); font-size: clamp(2.65rem, 6.3vw, 5.6rem); font-weight: 820; letter-spacing: -0.064em; line-height: 1.06; max-width: 900px; overflow-wrap: break-word; text-wrap: balance; word-break: keep-all; }
+.hero-slide-copy > p { color: rgba(255, 255, 255, 0.76); font-size: clamp(1rem, 1.6vw, 1.17rem); line-height: 1.8; margin-top: 22px; max-width: 680px; }
+.hero-slide-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+.button--hero { background: var(--white); color: var(--forest-dark); }
+.button--hero:hover { background: var(--sage); }
+.button--hero-quiet { border-color: rgba(255, 255, 255, 0.34); color: var(--white); }
+.button--hero-quiet:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.7); }
+.hero-slider-controls { align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.22); display: flex; gap: 24px; justify-content: space-between; margin-top: 48px; padding-top: 18px; }
+.hero-slide-progress { align-items: center; color: rgba(255, 255, 255, 0.72); display: flex; font-family: var(--font-mono); font-size: 0.69rem; font-weight: 700; gap: 11px; }
+.hero-progress-track { background: rgba(255, 255, 255, 0.22); height: 2px; overflow: hidden; width: min(24vw, 260px); }
+.hero-progress-track > span { background: var(--apricot); display: block; height: 100%; transform: scaleX(0); transform-origin: left; }
+.hero-progress-track > span.is-running { animation: hero-progress var(--slide-duration) linear both; }
+.hero-slide-buttons { display: flex; gap: 7px; }
+.hero-slide-buttons button { align-items: center; border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 50%; color: var(--white); display: flex; height: 40px; justify-content: center; transition: background 0.2s ease, border-color 0.2s ease; width: 40px; }
+.hero-slide-buttons button:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.7); }
+.hero--slider .stats-strip { background: var(--paper); margin-top: 0; }
+@keyframes hero-slide-enter { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes hero-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
 .stats-strip { border-top: 1px solid var(--line-strong); display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 76px; }
 .stat { border-right: 1px solid var(--line); padding: 24px 26px 6px; }
 .stat:first-child { padding-left: 0; }
@@ -423,6 +500,8 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   .guestbook-layout { grid-template-columns: 1fr; }
   .guestbook-form { position: static; }
   .message-list { max-height: none; }
+  .hero-stage, .hero-slide-content { min-height: 660px; }
+  .hero-slide-content { padding-bottom: 30px; padding-top: 104px; }
 }
 
 @media (max-width: 640px) {
@@ -433,6 +512,12 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   .hero-title { font-size: clamp(2.7rem, 13vw, 4.1rem); }
   .hero-title br { display: none; }
   .hero-title strong { white-space: normal; }
+  .hero-slide-copy h1 { font-size: clamp(2.45rem, 12vw, 3.8rem); }
+  .hero-slide-actions { display: grid; }
+  .hero-slide-actions .button { width: 100%; }
+  .hero-slider-controls { margin-top: 36px; }
+  .hero-progress-track { width: 90px; }
+  .hero-slide-buttons button { height: 38px; width: 38px; }
   .hero-actions { display: grid; }
   .hero-actions .button { width: 100%; }
   .field-note { border-radius: 5px 22px 22px 22px; box-shadow: 10px 12px 0 var(--sage); padding: 24px; }

@@ -1,4 +1,40 @@
 {
+  "hero": {
+    "autoplay": true,
+    "interval": 7000,
+    "slides": [
+      {
+        "id": "hero-quote",
+        "type": "quote",
+        "eyebrow": "FIELD NOTE · WONJU",
+        "title": "사람에게 쓰는 시간은 늘리고, 반복 행정은 줄입니다.",
+        "description": "현장에서 발견한 불편을 누구나 바로 쓰는 도구로 바꿉니다.",
+        "url": "",
+        "poster": "",
+        "alt": ""
+      },
+      {
+        "id": "hero-lecture",
+        "type": "image",
+        "eyebrow": "LECTURE & COMMUNITY",
+        "title": "현장에서 배우고, 동료와 함께 나눕니다.",
+        "description": "강의와 실천 현장의 사진을 등록해주세요.",
+        "url": "",
+        "poster": "",
+        "alt": "사회복지 스마트워크 강의 현장"
+      },
+      {
+        "id": "hero-film",
+        "type": "video",
+        "eyebrow": "SMART WELFARE IN MOTION",
+        "title": "기술이 복지의 온도를 높이는 순간",
+        "description": "활동 영상이나 프로젝트 소개 영상을 등록해주세요.",
+        "url": "",
+        "poster": "",
+        "alt": "복지 현장과 스마트워크를 소개하는 영상"
+      }
+    ]
+  },
   "profile": {
     "name": "박주임 (Ju-im Park)",
     "role": "사회복지사 & 스마트워크 소프트웨어 빌더",
