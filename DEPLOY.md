@@ -72,6 +72,10 @@ Render might take a few minutes to build and deploy.
 *   **Images not loading:**
     *   If you added images locally to `public/`, they should work.
     *   If you are linking to external images, make sure the links are valid.
+*   **Photo upload in the admin 기록 section fails:**
+    *   The uploader stores files in the Supabase Storage bucket `portfolio-media`. Run the storage section of `supabase_schema.sql` once (Supabase Dashboard > SQL Editor) to create the bucket and its public-read policy.
+    *   Uploads are written with `SUPABASE_SERVICE_ROLE_KEY`, so that variable must be set in the deployment environment. Without it the request is rejected by row level security.
+    *   Each photo must be a JPG, PNG, WEBP, GIF, or AVIF file of 5MB or less.
 
 ## Updating your site
 Whenever you push changes to GitHub (`git push`), Vercel or Render will automatically redeploy your site with the updates!

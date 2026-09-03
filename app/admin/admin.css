@@ -300,6 +300,31 @@ summary.admin-item-head::-webkit-details-marker { display: none; }
 .admin-item-content { border-top: 1px solid var(--line); padding: 20px; }
 .admin-item:not(details) .admin-item-head { border-bottom: 1px solid var(--line); }
 
+/* 기록 사진 편집기 */
+.admin-photos { border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); display: grid; gap: 14px; padding: 16px; }
+.admin-photos-head { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+.admin-photos-head > span { color: var(--ink-soft); font-size: 0.79rem; font-weight: 760; }
+.admin-photos-head > span em { color: var(--muted-light); font-style: normal; font-weight: 580; margin-left: 6px; }
+.admin-photos-head label { align-items: center; cursor: pointer; display: inline-flex; gap: 6px; }
+.admin-photos-head label.is-disabled { cursor: progress; opacity: 0.62; pointer-events: none; }
+/* 파일 선택창은 위의 라벨 버튼으로 대신 엽니다. */
+.admin-photos-input { height: 0; opacity: 0; position: absolute; width: 0; }
+.admin-photos-empty { color: var(--muted-light); font-size: 0.82rem; line-height: 1.6; }
+.admin-photo-list { display: grid; gap: 10px; }
+.admin-photo { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; gap: 12px; padding: 10px; }
+.admin-photo > img { border-radius: 8px; flex: 0 0 auto; height: 64px; object-fit: cover; width: 96px; }
+.admin-photo-body { align-items: center; display: flex; flex: 1; gap: 10px; min-width: 0; }
+.admin-photo-body input { flex: 1; min-width: 0; }
+.admin-photo-tools { display: flex; flex: 0 0 auto; gap: 6px; }
+.admin-photo-tools button,
+.admin-photo-body input { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; color: var(--muted); }
+.admin-photo-body input { color: var(--ink); font-size: 0.85rem; padding: 9px 11px; }
+.admin-photo-tools button { align-items: center; display: inline-flex; height: 32px; justify-content: center; width: 32px; }
+.admin-photo-tools button:hover:not(:disabled) { border-color: var(--forest); color: var(--forest); }
+.admin-photo-tools button.is-danger:hover:not(:disabled) { background: #fff7f8; border-color: var(--danger); color: var(--danger); }
+.admin-photos-link { display: flex; gap: 8px; }
+.admin-photos-link input { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; flex: 1; font-size: 0.85rem; min-width: 0; padding: 9px 11px; }
+
 .admin-empty { border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); color: var(--muted-light); font-size: 0.88rem; padding: 32px 16px; text-align: center; }
 .admin-note { color: var(--muted); font-size: 0.8rem; line-height: 1.7; margin-top: 16px; }
 .admin-guest-message { color: var(--ink-soft); font-size: 0.9rem; line-height: 1.75; padding: 18px 20px 20px; }
@@ -342,6 +367,10 @@ summary.admin-item-head::-webkit-details-marker { display: none; }
   .admin-item-tools button { height: 30px; width: 30px; }
   .admin-item-chevron { display: none; }
   .admin-item-content { padding: 16px 14px; }
+  .admin-photo { align-items: stretch; flex-direction: column; }
+  .admin-photo > img { height: 150px; width: 100%; }
+  .admin-photo-body { align-items: stretch; flex-direction: column; }
+  .admin-photos-link { flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {

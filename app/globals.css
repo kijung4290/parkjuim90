@@ -395,6 +395,20 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .like-button { align-items: center; border-radius: var(--radius-pill); color: var(--muted); display: inline-flex; font-size: 0.82rem; font-weight: 700; gap: 6px; padding: 7px 10px; }
 .like-button:hover, .like-button.is-liked { background: #fff0f2; color: var(--danger); }
 .read-label { align-items: center; color: var(--forest); display: inline-flex; font-size: 0.84rem; font-weight: 750; gap: 5px; }
+.story-thumb { border-radius: var(--radius-sm); margin-bottom: 20px; overflow: hidden; position: relative; }
+.story-thumb img { aspect-ratio: 16 / 9; object-fit: cover; width: 100%; }
+.story-thumb-count { align-items: center; background: rgba(25, 31, 40, 0.72); border-radius: var(--radius-pill); bottom: 10px; color: var(--white); display: inline-flex; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; gap: 5px; padding: 4px 9px; position: absolute; right: 10px; }
+/* 카드 본문은 전문을 여는 버튼이므로 글 블록처럼 보이게 되돌립니다. */
+.story-open { color: inherit; text-align: left; width: 100%; }
+.story-more { align-items: center; color: var(--forest); display: inline-flex; font-size: 0.84rem; font-weight: 750; gap: 5px; margin-top: 16px; transition: gap 0.2s ease; }
+.story-open:hover .story-more { gap: 9px; }
+
+/* 기록 전문 모달 */
+.story-modal-gallery { display: grid; gap: 14px; margin: 22px 0 0; }
+.story-modal-gallery img { border-radius: var(--radius-sm); width: 100%; }
+.story-modal-gallery figcaption { color: var(--muted); font-size: 0.8rem; margin-top: 7px; }
+.story-modal-body { color: var(--ink-soft); display: grid; gap: 16px; line-height: 1.85; margin: 24px 0 26px; }
+.story-modal-footer { align-items: center; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding-top: 18px; }
 
 /* Guestbook */
 .guestbook-layout { align-items: start; display: grid; gap: 32px; grid-template-columns: minmax(300px, 390px) 1fr; }
@@ -1273,6 +1287,10 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .public-site .story-log-number { margin-bottom: 0; }
 .public-site .story-card:first-child .story-log-label { color: rgba(255, 255, 255, 0.48); }
 .public-site .story-copy { display: grid; }
+.public-site .story-thumb { border-radius: 4px 18px 18px 18px; margin-bottom: 22px; }
+.public-site .story-card:first-child .story-thumb { border-radius: 4px 20px 20px 20px; }
+.public-site .story-card:first-child .story-more { color: #a7e1d2; }
+.public-site .story-modal { border-radius: 4px 24px 24px 24px; }
 
 .public-site .guestbook-form-head,
 .public-site .testimonial-head { align-items: flex-start; border-bottom: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; margin-bottom: 22px; padding-bottom: 17px; }

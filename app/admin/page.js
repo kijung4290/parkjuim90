@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import Link from 'next/link';
 import {
     BriefcaseBusiness,
@@ -12,6 +12,7 @@ import {
     Film,
     FolderKanban,
     Image as ImageIcon,
+    ImagePlus,
     LogOut,
     MessagesSquare,
     NotebookText,
@@ -28,6 +29,7 @@ import { supabase } from '@/lib/supabase';
 import { PROJECT_CATEGORIES, getCategoryLabel } from '@/lib/projectMeta';
 import { DEFAULT_HERO } from '@/lib/defaults';
 import { getVideoEmbedUrl } from '@/lib/heroMedia';
+import { getStoryImages } from '@/lib/stories';
 import { PROJECT_ICON_NAMES } from '@/components/projectIcons';
 import './admin.css';
 
@@ -116,6 +118,83 @@ function SlidePreview({ slide }) {
     );
 }
 
+/**
+ * 기록에 붙일 사진을 올리고 설명·순서를 정리하는 편집기입니다.
+ * 컴퓨터·휴대폰에 있는 사진을 바로 올릴 수 있고, 이미 인터넷에 있는 사진은 주소로 붙일 수 있습니다.
+ */
+function StoryImageEditor({ images, uploading, onUpload, onUpdate, onRemove, onMove }) {
+    const [linkUrl, setLinkUrl] = useState('');
+    const inputId = useId();
+
+    const addLink = () => {
+        const url = linkUrl.trim();
+        if (!url) return;
+        onUpload([{ url, alt: '' }]);
+        setLinkUrl('');
+    };
+
+    return (
+        <div className="admin-span-all admin-photos">
+            <div className="admin-photos-head">
+                <span>사진<em>(한 장당 5MB까지 · JPG·PNG·WEBP·GIF)</em></span>
+                <label className={`button button--soft button--small${uploading ? ' is-disabled' : ''}`} htmlFor={inputId}>
+                    <ImagePlus size={16} /> {uploading ? '올리는 중…' : '사진 올리기'}
+                </label>
+                <input
+                    id={inputId}
+                    className="admin-photos-input"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                    multiple
+                    disabled={uploading}
+                    onChange={(event) => {
+                        onUpload(event.target.files);
+                        event.target.value = '';
+                    }}
+                />
+            </div>
+
+            {images.length > 0 ? (
+                <ul className="admin-photo-list">
+                    {images.map((image, imageIndex) => (
+                        <li className="admin-photo" key={`${image.url}-${imageIndex}`}>
+                            <img src={image.url} alt="" />
+                            <div className="admin-photo-body">
+                                <input
+                                    value={image.alt || ''}
+                                    placeholder="사진 설명 (화면에 함께 보이고, 화면 낭독기가 읽어줍니다)"
+                                    onChange={(event) => onUpdate(imageIndex, { alt: event.target.value })}
+                                />
+                                <div className="admin-photo-tools">
+                                    <button type="button" title="앞으로" aria-label={`사진 ${imageIndex + 1} 앞으로`} disabled={imageIndex === 0} onClick={() => onMove(imageIndex, -1)}><ChevronUp size={15} /></button>
+                                    <button type="button" title="뒤로" aria-label={`사진 ${imageIndex + 1} 뒤로`} disabled={imageIndex === images.length - 1} onClick={() => onMove(imageIndex, 1)}><ChevronDown size={15} /></button>
+                                    <button type="button" className="is-danger" title="삭제" aria-label={`사진 ${imageIndex + 1} 삭제`} onClick={() => onRemove(imageIndex)}><Trash2 size={15} /></button>
+                                </div>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="admin-photos-empty">첫 번째 사진이 홈 화면 카드의 대표 사진이 되고, 나머지는 전문 화면에서 보입니다.</p>
+            )}
+
+            <div className="admin-photos-link">
+                <input
+                    value={linkUrl}
+                    placeholder="이미 인터넷에 있는 사진 주소 (https://...)"
+                    onChange={(event) => setLinkUrl(event.target.value)}
+                    onKeyDown={(event) => {
+                        if (event.key !== 'Enter') return;
+                        event.preventDefault();
+                        addLink();
+                    }}
+                />
+                <button className="button button--soft button--small" type="button" onClick={addLink}>주소로 추가</button>
+            </div>
+        </div>
+    );
+}
+
 /** 반복 항목 하나를 감싸며 순서 이동·삭제 버튼을 제공합니다. */
 function ItemCard({ label, title, index, total, onMove, onRemove, children }) {
     return (
@@ -148,6 +227,7 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null); // { type: 'ok' | 'error', text }
     const [activeSection, setActiveSection] = useState('hero');
+    const [uploadingStory, setUploadingStory] = useState(null); // 사진을 올리는 중인 기록의 순번
 
     const isLoggedIn = Boolean(session);
 
@@ -223,13 +303,19 @@ export default function AdminPage() {
         setData(null);
     };
 
-    /** 저장·초기화 요청에는 로그인 토큰을 함께 보냅니다. */
+    /** 저장·초기화·사진 업로드 요청에는 로그인 토큰을 함께 보냅니다. */
     const authorizedFetch = async (url, options = {}) => {
         const { data: { session: current } } = await supabase.auth.getSession();
         if (!current?.access_token) throw new Error('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        // 파일 전송(FormData)은 브라우저가 경계 문자열까지 포함해 헤더를 만들어야 하므로 직접 지정하지 않습니다.
+        const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
         return fetch(url, {
             ...options,
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${current.access_token}`, ...options.headers },
+            headers: {
+                ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+                Authorization: `Bearer ${current.access_token}`,
+                ...options.headers,
+            },
         });
     };
 
@@ -358,6 +444,69 @@ export default function AdminPage() {
         });
 
     const addItem = (key, template) => mutateList(key, (list) => [...list, template]);
+
+    /* ── 기록 사진 ─────────────────────────────────── */
+    const mutateStoryImages = (index, mutate) =>
+        mutateList('stories', (list) => {
+            const story = list[index];
+            list[index] = { ...story, images: mutate(getStoryImages(story)) };
+            return list;
+        });
+
+    /**
+     * 고른 사진을 한 장씩 서버로 보내고, 성공한 사진부터 목록에 추가합니다.
+     * 중간에 실패해도 이미 올라간 사진은 남겨 다시 올리는 수고를 줄입니다.
+     */
+    const uploadStoryImages = async (index, fileList) => {
+        const entries = Array.from(fileList || []);
+        if (entries.length === 0) return;
+
+        setUploadingStory(index);
+        const uploaded = [];
+        try {
+            for (const entry of entries) {
+                // 주소로 추가하는 경우에는 업로드 없이 그대로 붙입니다.
+                if (!(entry instanceof File)) {
+                    uploaded.push({ url: entry.url, alt: entry.alt || '' });
+                    continue;
+                }
+
+                const form = new FormData();
+                form.append('file', entry);
+                form.append('folder', 'stories');
+
+                const response = await authorizedFetch('/api/upload', { method: 'POST', body: form });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || '사진을 올리지 못했습니다.');
+                uploaded.push({ url: result.url, alt: '' });
+            }
+            if (uploaded.length > 0) notify('ok', `사진 ${uploaded.length}장을 올렸습니다. 저장 버튼을 눌러야 사이트에 반영됩니다.`);
+        } catch (error) {
+            notify('error', error.message);
+        } finally {
+            if (uploaded.length > 0) mutateStoryImages(index, (images) => [...images, ...uploaded]);
+            setUploadingStory(null);
+        }
+    };
+
+    const updateStoryImage = (index, imageIndex, patch) =>
+        mutateStoryImages(index, (images) => {
+            const next = [...images];
+            next[imageIndex] = { ...next[imageIndex], ...patch };
+            return next;
+        });
+
+    const removeStoryImage = (index, imageIndex) =>
+        mutateStoryImages(index, (images) => images.filter((_, i) => i !== imageIndex));
+
+    const moveStoryImage = (index, imageIndex, delta) =>
+        mutateStoryImages(index, (images) => {
+            const next = [...images];
+            const target = imageIndex + delta;
+            if (target < 0 || target >= next.length) return next;
+            [next[imageIndex], next[target]] = [next[target], next[imageIndex]];
+            return next;
+        });
 
     const removeItem = (key, index) => {
         if (!window.confirm('이 항목을 삭제할까요?')) return;
@@ -805,10 +954,10 @@ export default function AdminPage() {
                         <div className="admin-card-head">
                             <div>
                                 <h2>기록</h2>
-                                <p>첫 번째 글이 두 칸 너비로 크게 표시됩니다.</p>
+                                <p>첫 번째 글이 두 칸 너비로 크게 표시됩니다. 홈 화면에는 앞부분만 보이고, 방문자가 카드를 누르면 사진과 전문이 열립니다.</p>
                             </div>
                             <button className="button button--soft button--small" type="button"
-                                onClick={() => addItem('stories', { id: Date.now(), tag: '', date: '', readTime: '3분', title: '', content: '', likes: 0, link: '' })}>
+                                onClick={() => addItem('stories', { id: Date.now(), tag: '', date: '', readTime: '3분', title: '', summary: '', content: '', images: [], likes: 0, link: '' })}>
                                 <Plus size={16} /> 기록 추가
                             </button>
                         </div>
@@ -834,9 +983,21 @@ export default function AdminPage() {
                                         <Field label="제목" wide>
                                             <input value={story.title || ''} onChange={(e) => updateItem('stories', index, { title: e.target.value })} />
                                         </Field>
-                                        <Field label="내용" wide>
+                                        <Field label="미리보기 문구" hint="(비워두면 본문 앞부분을 자동으로 보여줍니다)" wide>
+                                            <input value={story.summary || ''} onChange={(e) => updateItem('stories', index, { summary: e.target.value })}
+                                                placeholder="홈 화면 카드에 보여줄 한 줄 요약" />
+                                        </Field>
+                                        <Field label="내용" hint="(전문 화면에 보입니다 · 빈 줄로 문단을 나눌 수 있습니다)" wide>
                                             <textarea value={story.content || ''} onChange={(e) => updateItem('stories', index, { content: e.target.value })} />
                                         </Field>
+                                        <StoryImageEditor
+                                            images={getStoryImages(story)}
+                                            uploading={uploadingStory === index}
+                                            onUpload={(files) => uploadStoryImages(index, files)}
+                                            onUpdate={(imageIndex, patch) => updateStoryImage(index, imageIndex, patch)}
+                                            onRemove={(imageIndex) => removeStoryImage(index, imageIndex)}
+                                            onMove={(imageIndex, delta) => moveStoryImage(index, imageIndex, delta)}
+                                        />
                                         <Field label="원문 링크" hint="(입력하면 ‘기록 읽기’가 나타납니다)">
                                             <input value={story.link || ''} onChange={(e) => updateItem('stories', index, { link: e.target.value })} placeholder="https://..." />
                                         </Field>

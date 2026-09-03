@@ -23,6 +23,18 @@ insert into portfolio (id, content)
 values (1, '{}');
 
 --------------------------------------------------------------------------------
+-- 4. 사진 저장소 (기록에 올리는 현장 사진이 여기에 저장됩니다)
+--    이미 만들어져 있으면 아무 일도 하지 않으므로 다시 실행해도 안전합니다.
+insert into storage.buckets (id, name, public)
+values ('portfolio-media', 'portfolio-media', true)
+on conflict (id) do nothing;
+
+-- 방문자는 사진을 볼 수만 있고, 올리기·지우기는 서버(서비스 롤 키)만 할 수 있습니다.
+create policy "Public read media"
+on storage.objects for select
+using (bucket_id = 'portfolio-media');
+
+--------------------------------------------------------------------------------
 -- ⚠️ 중요: 위 "Public read" 정책만 두면 쓰기가 막히므로,
 --    배포 환경(Vercel 등)에 서버 전용 환경변수를 반드시 추가해야 합니다.
 --
