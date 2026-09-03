@@ -1208,8 +1208,12 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   .public-site .hero-stage--quote,
   .public-site .hero-slide-content--workbench { min-height: 0; }
   .public-site .hero-slide-content--workbench { padding-bottom: 40px; padding-top: 64px; }
-  .public-site .hero-workbench-layout { grid-template-columns: 1fr; }
-  .public-site .hero-workbench-copy { max-width: 720px; }
+  .public-site .hero-workbench-layout { grid-template-columns: minmax(0, 1fr); max-width: 100%; width: 100%; }
+  .public-site .hero-workbench-layout > *,
+  .public-site .hero-workbench-copy { max-width: 100%; min-width: 0; width: 100%; }
+  .public-site .hero-stage--quote .hero-slide-copy h1,
+  .public-site .hero-stage--quote .hero-slide-lead,
+  .public-site .hero-workbench-introduction { max-width: 100%; overflow-wrap: anywhere; }
   .public-site .hero-workbench-board { width: 100%; }
   .public-site .hero-workbench-stats { margin-top: 54px; }
 }
@@ -1296,4 +1300,185 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   .public-site .brand-role > span:first-child { display: none; }
   .public-site .story-card-head { gap: 10px; }
   .public-site .story-meta { align-items: flex-end; flex-direction: column; }
+}
+
+/* Mobile refinement: preserve the field-workbench identity without shrinking the
+   desktop composition into an unreadable miniature. */
+@media (max-width: 640px) {
+  html { scroll-padding-top: 70px; }
+
+  .public-site .container { padding-inline: 18px; }
+  .public-site .section { padding-block: 64px; }
+  .public-site .section-head { gap: 14px; margin-bottom: 38px; }
+  .public-site .section-title {
+    font-size: clamp(1.9rem, 9vw, 2.35rem);
+    letter-spacing: -0.045em;
+    line-height: 1.18;
+    text-wrap: pretty;
+  }
+  .public-site .section-description { font-size: 0.98rem; line-height: 1.72; }
+  .public-site .eyebrow { flex-wrap: wrap; gap: 7px; line-height: 1.45; }
+  .public-site .button { min-height: 48px; width: 100%; }
+
+  .public-site .site-nav { backdrop-filter: blur(14px) saturate(115%); }
+  .public-site .nav-inner { height: 68px; }
+  .public-site .brand { gap: 10px; min-width: 0; }
+  .public-site .brand-mark { flex: 0 0 auto; height: 38px; width: 38px; }
+  .public-site .brand-name {
+    font-size: clamp(0.86rem, 4vw, 0.96rem);
+    max-width: calc(100vw - 116px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .public-site .brand-role { display: none; }
+  .public-site .nav-toggle { flex: 0 0 auto; height: 44px; width: 44px; }
+  .public-site .mobile-nav {
+    box-shadow: 0 18px 32px rgba(23, 43, 42, 0.12);
+    gap: 0;
+    max-height: calc(100dvh - 68px);
+    overflow-y: auto;
+    padding: 8px 18px max(20px, env(safe-area-inset-bottom));
+  }
+  .public-site .mobile-nav .nav-link {
+    align-items: center;
+    display: flex;
+    font-size: 0.95rem;
+    min-height: 48px;
+    padding: 12px 2px;
+  }
+  .public-site .mobile-nav .button { margin-top: 12px; }
+
+  .public-site .hero-stage:not(.hero-stage--quote),
+  .public-site .hero-slide-content:not(.hero-slide-content--workbench) {
+    min-height: max(580px, calc(100svh - 68px));
+  }
+  .public-site .hero-slide-content:not(.hero-slide-content--workbench) {
+    padding-bottom: 28px;
+    padding-top: 86px;
+  }
+  .public-site .hero-slide-copy h1,
+  .public-site .hero-stage--quote .hero-slide-copy h1 {
+    font-size: clamp(2.1rem, 9.5vw, 2.45rem);
+    letter-spacing: -0.055em;
+    line-height: 1.08;
+    text-wrap: pretty;
+  }
+  .public-site .hero-slide-copy > p { font-size: 0.98rem; line-height: 1.7; }
+  .public-site .hero-slide-actions { gap: 9px; margin-top: 24px; }
+  .public-site .hero-slider-controls { gap: 14px; margin-top: 30px; }
+  .public-site .hero-progress-track { width: clamp(64px, 22vw, 90px); }
+  .public-site .hero-slide-buttons button,
+  .public-site .archive-showcase-buttons button { height: 44px; width: 44px; }
+
+  .public-site .hero-slide-content--workbench { padding-bottom: 28px; padding-top: 38px; }
+  .public-site .hero-workbench-layout { gap: 38px; grid-template-columns: minmax(0, 1fr); max-width: 100%; width: 100%; }
+  .public-site .hero-workbench-layout > *,
+  .public-site .hero-workbench-copy { max-width: 100%; min-width: 0; width: 100%; }
+  .public-site .hero-workbench-identity { gap: 4px; margin-bottom: 20px; }
+  .public-site .hero-workbench-introduction { font-size: 0.9rem; line-height: 1.68; }
+  .public-site .hero-stage--quote .hero-slide-copy h1,
+  .public-site .hero-stage--quote .hero-slide-lead,
+  .public-site .hero-workbench-introduction { max-width: 100%; overflow-wrap: anywhere; word-break: keep-all; }
+  .public-site .hero-workbench-board { border-radius: 4px 18px 18px 18px; box-shadow: 7px 8px 0 #cfe1da; }
+  .public-site .hero-workbench-board-head { padding: 18px 17px 16px; }
+  .public-site .hero-workbench-board-title { font-size: 0.94rem; overflow-wrap: anywhere; }
+  .public-site .hero-workbench-canvas { min-height: 460px; padding: 20px 14px 16px; }
+  .public-site .hero-workbench-flow { gap: 14px 12px; }
+  .public-site .hero-workbench-step-title { font-size: 0.78rem; }
+  .public-site .hero-workbench-step-note { font-size: 0.62rem; }
+  .public-site .hero-workbench-output { margin-top: 28px; }
+  .public-site .hero-workbench-tool { min-height: 96px; padding: 9px; }
+  .public-site .hero-workbench-tool-name { font-size: 0.72rem; }
+  .public-site .hero-workbench-stats { margin-top: 40px; }
+  .public-site .hero-workbench-stat { align-items: flex-start; flex-direction: column; gap: 3px; padding: 14px 9px; }
+  .public-site .hero-workbench-stat:first-child { padding-left: 9px; }
+  .public-site .hero-workbench-stat-value { font-size: 1.4rem; }
+
+  .public-site .principle { padding-block: 34px 40px !important; }
+  .public-site .principle-icon { margin-block: 14px 20px; }
+  .public-site .principle p { font-size: 0.94rem; }
+
+  .public-site .archive-toolbar { gap: 14px; padding-block: 14px; }
+  .public-site .filter-tabs {
+    margin-inline: -18px;
+    padding-inline: 18px;
+    scroll-padding-inline: 18px;
+  }
+  .public-site .filter-button { min-height: 44px; padding: 10px 14px; }
+  .public-site .search-box input,
+  .public-site .form-field input,
+  .public-site .form-field textarea,
+  .public-site .request-field input,
+  .public-site .request-field textarea { font-size: 1rem; }
+  .public-site .search-box input { min-height: 48px; }
+  .public-site .archive-summary { padding-bottom: 22px; }
+  .public-site .archive-showcase { border-radius: 4px 20px 20px 20px; min-height: 0; }
+  .public-site .archive-showcase__visual { min-height: 190px; }
+  .public-site .archive-showcase__body { padding: 26px 20px 28px; }
+  .public-site .archive-showcase__category { margin-top: 26px; }
+  .public-site .archive-showcase__title { font-size: clamp(1.8rem, 9vw, 2.2rem); overflow-wrap: anywhere; }
+  .public-site .archive-showcase__summary { font-size: 0.94rem; line-height: 1.7; }
+  .public-site .archive-showcase__actions,
+  .public-site .archive-showcase__links { align-items: stretch; width: 100%; }
+  .public-site .archive-direct-link,
+  .public-site .project-detail-button--showcase { min-height: 44px; }
+  .public-site .archive-item__body { padding-block: 24px; }
+  .public-site .archive-item__title,
+  .public-site .archive-item__summary { overflow-wrap: anywhere; }
+  .public-site .archive-item__actions { align-items: stretch; flex-direction: column; width: 100%; }
+  .public-site .archive-item__links { width: 100%; }
+  .public-site .project-detail-button--compact { min-height: 44px; }
+
+  .public-site .modal-backdrop { padding-top: env(safe-area-inset-top); }
+  .public-site .project-modal {
+    border-radius: 18px 18px 0 0;
+    max-height: calc(100dvh - max(12px, env(safe-area-inset-top)));
+    padding: 64px 20px max(24px, env(safe-area-inset-bottom));
+  }
+  .public-site .modal-close { height: 44px; right: 16px; top: 12px; width: 44px; }
+  .public-site .project-modal h2 { font-size: 1.8rem; overflow-wrap: anywhere; }
+
+  .public-site .experience-layout { gap: 8px; }
+  .public-site .experience-layout .section-head { margin-bottom: 22px; }
+  .public-site .timeline-item { padding: 26px 0 30px 16px; }
+  .public-site .timeline-item h3 { font-size: 1.22rem; }
+  .public-site .timeline-item p { font-size: 0.94rem; }
+
+  .public-site .story-card,
+  .public-site .story-card:first-child,
+  .public-site .story-card:not(:first-child) { min-height: 0; padding: 24px 20px; }
+  .public-site .story-card h3 { margin-top: 22px; }
+  .public-site .story-card:first-child h3 { font-size: 1.7rem; }
+
+  .public-site .guestbook-form { padding: 24px 20px; }
+  .public-site .emoji-group { flex-wrap: wrap; }
+  .public-site .emoji-button { height: 44px; width: 44px; }
+  .public-site .message-card { padding: 18px 16px; }
+  .public-site .message-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+
+  .public-site .contact-panel { gap: 32px; padding: 30px 18px; }
+  .public-site .contact-panel h2 { font-size: clamp(1.9rem, 9vw, 2.3rem); }
+  .public-site .contact-item { gap: 10px; grid-template-columns: 38px minmax(0, 1fr); }
+  .public-site .contact-value { overflow-wrap: anywhere; }
+  .public-site .contact-action { justify-self: start; min-height: 44px; padding-block: 10px; }
+  .public-site .contact-request-form { padding: 22px 16px; }
+  .public-site .request-type-grid { grid-template-columns: 1fr; }
+  .public-site .request-type-grid button { min-height: 48px; }
+
+  .public-site .site-footer { padding-top: 48px; }
+  .public-site .footer-top { gap: 28px; padding-bottom: 30px; }
+  .public-site .footer-links { gap: 4px 18px; }
+  .public-site .footer-links a { align-items: center; display: inline-flex; min-height: 44px; }
+  .public-site .footer-build-note { line-height: 1.6; }
+}
+
+@media (max-width: 370px) {
+  .public-site .container { padding-inline: 15px; }
+  .public-site .hero-stage--quote .hero-slide-copy h1 { font-size: 2.1rem; }
+  .public-site .hero-workbench-canvas { padding-inline: 11px; }
+  .public-site .hero-workbench-step-note,
+  .public-site .hero-workbench-tool-note { display: none; }
+  .public-site .hero-workbench-tool { min-height: 70px; }
+  .public-site .filter-tabs { margin-inline: -15px; padding-inline: 15px; }
 }
