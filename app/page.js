@@ -3,6 +3,7 @@ import { DEFAULT_HERO, DEFAULT_PROFILE } from '@/lib/defaults';
 import { TOOL_CATALOG } from '@/data/tools';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
+import ServicesSection from '@/components/ServicesSection';
 import PhilosophySection from '@/components/PhilosophySection';
 import ArchiveSection from '@/components/ArchiveSection';
 import ExperienceSection from '@/components/ExperienceSection';
@@ -32,6 +33,7 @@ export default async function Home() {
       <Navbar />
       <main id="main-content">
         <HeroSection hero={hero} profile={profile} projectCount={projects.length} />
+        <ServicesSection />
         <PhilosophySection philosophy={data.philosophy || []} />
         <ArchiveSection projects={projects} />
         <ExperienceSection experiences={data.experiences || []} />

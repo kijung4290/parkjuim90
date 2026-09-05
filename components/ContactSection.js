@@ -2,26 +2,43 @@
 
 import { useState } from 'react';
 import {
-  BookOpenCheck,
   Check,
+  ClipboardCheck,
+  CodeXml,
   Copy,
   FileSpreadsheet,
   Globe2,
+  GraduationCap,
   Handshake,
+  Laptop,
   Mail,
   MapPin,
   MessageSquareText,
   Send,
+  Users,
 } from 'lucide-react';
+import { SERVICES } from '@/lib/seo';
 
+const SERVICE_ICONS = {
+  'staff-training': GraduationCap,
+  competency: Users,
+  'smartwork-training': Laptop,
+  'smartwork-consulting': ClipboardCheck,
+  'vibe-coding': CodeXml,
+};
+
+/**
+ * 문의 종류는 실제로 제공하는 교육·컨설팅(lib/seo.js)과 같은 목록을 씁니다.
+ * 안내 영역에서 본 이름 그대로 문의할 수 있고, 메일 제목도 자동으로 맞춰집니다.
+ */
 const REQUEST_TYPES = [
-  {
-    id: 'lecture',
-    label: '강의 요청',
-    subject: '강의 요청',
-    icon: BookOpenCheck,
-    placeholder: '희망 일정, 교육 대상과 인원, 원하는 주제와 교육 시간을 알려주세요.',
-  },
+  ...SERVICES.map((service) => ({
+    id: service.id,
+    label: service.shortLabel,
+    subject: `${service.name} 문의`,
+    icon: SERVICE_ICONS[service.id] || GraduationCap,
+    placeholder: service.placeholder,
+  })),
   {
     id: 'template',
     label: '업무양식 제작',
@@ -101,7 +118,7 @@ export default function ContactSection({ profile }) {
               <span className="eyebrow-en" lang="en">Request & collaboration</span>
             </span>
             <h2 id="contact-title">필요한 일을 알려주시면<br />함께 방법을 찾겠습니다.</h2>
-            <p className="section-description">복지 현장 강의부터 반복 업무를 줄이는 양식과 자동화 도구 제작까지 편하게 문의해주세요.</p>
+            <p className="section-description">사회복지 직원교육과 직원역량강화교육, 스마트워크 교육·컨설팅, 바이브코딩 교육부터 반복 업무를 줄이는 양식·자동화 도구 제작까지 편하게 문의해주세요.</p>
 
             <div className="contact-list" role="list">
               <div className="contact-item" role="listitem">

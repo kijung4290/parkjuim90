@@ -1,4 +1,4 @@
-const SITE_URL = 'https://parkjuim90.cloud';
+import { SITE_URL } from '@/lib/seo';
 
 export default function robots() {
   return {

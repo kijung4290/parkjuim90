@@ -39,6 +39,25 @@ npm run dev     # http://localhost:3000
 - **사이트에서 확인** — 편집 중인 항목이 실제로 어디에 보이는지 새 탭으로 바로 열어봅니다.
 - **복제 · 맨 위로 · 검색** — 비슷한 항목을 베껴 만들고, 순서를 옮기고, 목록이 길어지면 걸러 볼 수 있습니다.
 
+## 검색 최적화 (SEO)
+
+노리는 검색어와 서비스 목록은 [`lib/seo.js`](lib/seo.js) **한 곳**에만 적혀 있습니다.
+이 파일을 고치면 아래가 모두 함께 바뀝니다.
+
+| 반영되는 곳 | 파일 |
+| --- | --- |
+| 검색 결과 제목·설명, 키워드, OG/트위터 카드 | `app/layout.js` |
+| 구조화 데이터(JSON-LD): Person · ProfessionalService · Service 5종 | `app/layout.js` |
+| 화면에 보이는 **교육·컨설팅 안내** 카드 | `components/ServicesSection.js` |
+| 문의 폼의 요청 종류와 메일 제목 | `components/ContactSection.js` |
+| sitemap · robots의 사이트 주소 | `app/sitemap.js`, `app/robots.js` |
+
+검색 엔진은 메타태그보다 **화면에 실제로 보이는 글**을 훨씬 크게 봅니다.
+그래서 키워드를 숨겨두지 않고 방문자에게도 쓸모 있는 안내 카드로 노출합니다.
+
+> 첫 화면의 큰 제목(`<h1>`)은 관리자 화면에서 고치는 **첫 번째 슬라이드의 제목**입니다.
+> 검색어를 여기에도 담고 싶다면 `/admin` → 첫 화면 슬라이드에서 직접 수정하세요.
+
 ## 사진 넣기
 
 1. `public/images` 폴더에 파일을 넣습니다. (예: `profile.jpg`)

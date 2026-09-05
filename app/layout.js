@@ -1,48 +1,52 @@
 import "./globals.css";
-
-const SITE_URL = "https://parkjuim90.cloud";
+import {
+  SEO_DESCRIPTION,
+  SEO_KEYWORDS,
+  SEO_SHORT_DESCRIPTION,
+  SEO_TITLE,
+  SERVICES,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/seo";
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "스마트워커 박주임 | 스마트워크 교육·컨설팅·바이브코딩",
-    template: "%s | 박주임 포트폴리오",
+    default: SEO_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "스마트워커 박주임의 스마트워크 교육, 스마트워크 컨설팅, 직원역량강화교육, 바이브코딩 교육과 사회복지 현장용 업무 자동화 도구를 소개합니다.",
-  keywords: [
-    "스마트워크 교육",
-    "스마트워크 컨설팅",
-    "직원역량강화교육",
-    "바이브코딩 교육",
-    "스마트워커 박주임",
-    "사회복지 스마트워크",
-    "사회복지사 교육",
-    "업무 자동화 교육",
-    "구글 앱스 스크립트 교육",
-    "사회복지 디지털 전환",
-  ],
-  applicationName: "스마트워커 박주임 포트폴리오",
-  creator: "스마트워커 박주임",
-  publisher: "스마트워커 박주임",
+  description: SEO_DESCRIPTION,
+  keywords: SEO_KEYWORDS,
+  applicationName: `${SITE_NAME} 포트폴리오`,
+  category: "교육",
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   authors: [{ name: "박주임 (Ju-im Park)", url: SITE_URL }],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "스마트워커 박주임 | 스마트워크 교육·컨설팅",
-    description: "직원역량강화교육과 바이브코딩 교육, 사회복지 현장용 스마트워크 도구를 소개합니다.",
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
     url: SITE_URL,
-    siteName: "스마트워커 박주임",
+    siteName: SITE_NAME,
     locale: "ko_KR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "스마트워커 박주임 | 스마트워크 교육·컨설팅",
-    description: "직원역량강화교육과 바이브코딩 교육, 사회복지 현장용 스마트워크 도구를 소개합니다.",
+    title: SEO_TITLE,
+    description: SEO_SHORT_DESCRIPTION,
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
 };
 
+/**
+ * 검색 엔진에 "이 사람이 무엇을 하는지"를 기계가 읽는 형식으로 알려줍니다.
+ * 서비스 목록은 lib/seo.js 한 곳에서 가져오므로 화면에 보이는 안내와 항상 같습니다.
+ */
 const STRUCTURED_DATA = {
   "@context": "https://schema.org",
   "@graph": [
@@ -50,15 +54,16 @@ const STRUCTURED_DATA = {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
-      name: "스마트워커 박주임",
-      description: "스마트워크 교육·컨설팅과 바이브코딩 교육, 사회복지 현장 도구 아카이브",
+      name: SITE_NAME,
+      description: SEO_DESCRIPTION,
       inLanguage: "ko-KR",
+      publisher: { "@id": `${SITE_URL}/#person` },
     },
     {
       "@type": "ProfilePage",
       "@id": `${SITE_URL}/#profilepage`,
       url: SITE_URL,
-      name: "스마트워커 박주임 포트폴리오",
+      name: `${SITE_NAME} 포트폴리오`,
       isPartOf: { "@id": `${SITE_URL}/#website` },
       about: { "@id": `${SITE_URL}/#person` },
       inLanguage: "ko-KR",
@@ -67,31 +72,48 @@ const STRUCTURED_DATA = {
       "@type": "Person",
       "@id": `${SITE_URL}/#person`,
       name: "박주임",
-      alternateName: "스마트워커 박주임",
+      alternateName: SITE_NAME,
       url: SITE_URL,
-      jobTitle: "사회복지사·스마트워크 교육 강사",
-      description: "사회복지 현장의 업무를 개선하는 스마트워크 교육과 컨설팅, 직원역량강화교육, 바이브코딩 교육을 진행합니다.",
-      knowsAbout: [
-        "스마트워크 교육",
-        "스마트워크 컨설팅",
-        "직원역량강화교육",
-        "바이브코딩 교육",
-        "사회복지 업무 자동화",
-        "Google Apps Script",
-      ],
+      jobTitle: "사회복지사 · 스마트워크 교육 강사",
+      description: SEO_DESCRIPTION,
+      knowsAbout: SEO_KEYWORDS,
+      worksFor: { "@id": `${SITE_URL}/#service-provider` },
     },
-    ...[
-      "스마트워크 교육",
-      "스마트워크 컨설팅",
-      "직원역량강화교육",
-      "바이브코딩 교육",
-    ].map((name, index) => ({
+    {
+      "@type": "ProfessionalService",
+      "@id": `${SITE_URL}/#service-provider`,
+      name: `${SITE_NAME} 교육·컨설팅`,
+      url: `${SITE_URL}/#services`,
+      description: SEO_DESCRIPTION,
+      founder: { "@id": `${SITE_URL}/#person` },
+      areaServed: { "@type": "Country", name: "대한민국" },
+      availableLanguage: "ko-KR",
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: "KR",
+        addressRegion: "강원특별자치도",
+        addressLocality: "원주시",
+      },
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "교육·컨설팅 안내",
+        itemListElement: SERVICES.map((service, index) => ({
+          "@type": "Offer",
+          position: index + 1,
+          itemOffered: { "@id": `${SITE_URL}/#service-${service.id}` },
+        })),
+      },
+    },
+    ...SERVICES.map((service) => ({
       "@type": "Service",
-      "@id": `${SITE_URL}/#service-${index + 1}`,
-      name,
+      "@id": `${SITE_URL}/#service-${service.id}`,
+      name: service.name,
+      alternateName: service.keywords,
+      serviceType: service.name,
+      description: service.description,
       provider: { "@id": `${SITE_URL}/#person` },
-      areaServed: "대한민국",
-      url: `${SITE_URL}/#contact`,
+      areaServed: { "@type": "Country", name: "대한민국" },
+      url: `${SITE_URL}/#services`,
     })),
   ],
 };

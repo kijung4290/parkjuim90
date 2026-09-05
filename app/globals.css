@@ -571,6 +571,57 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   to { transform: scaleX(1); }
 }
 
+/* Services — 교육·컨설팅 안내 */
+.service-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+}
+.service-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(22px, 3vw, 30px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.service-card:hover { border-color: var(--forest); box-shadow: var(--shadow-sm); transform: translateY(-3px); }
+.service-card__icon {
+  align-items: center;
+  background: var(--sage-soft);
+  border: 1px solid rgba(49, 130, 246, 0.12);
+  border-radius: 14px;
+  color: var(--forest);
+  display: inline-flex;
+  height: 48px;
+  justify-content: center;
+  margin-bottom: 8px;
+  width: 48px;
+}
+.service-card__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.08rem, 1.7vw, 1.28rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.35;
+}
+.service-card__tagline { color: var(--forest); font-size: 0.83rem; font-weight: 720; line-height: 1.55; }
+.service-card__description { color: var(--muted); font-size: 0.92rem; line-height: 1.75; }
+.service-card--cta {
+  background: linear-gradient(150deg, var(--sage-soft), var(--surface));
+  border-style: dashed;
+  border-color: var(--line-strong);
+  justify-content: center;
+}
+.service-card--cta:hover { transform: none; }
+.service-card--cta .button { align-self: flex-start; margin-top: 8px; }
+
+@media (max-width: 560px) {
+  .service-grid { grid-template-columns: 1fr; }
+}
+
 /* Philosophy */
 .principle-grid { border-bottom: 1px solid var(--line-strong); border-top: 1px solid var(--line-strong); display: grid; grid-template-columns: repeat(2, 1fr); }
 .principle { min-height: 300px; padding: clamp(30px, 5vw, 52px); position: relative; }

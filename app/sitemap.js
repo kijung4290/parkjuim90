@@ -1,11 +1,11 @@
-const SITE_URL = 'https://parkjuim90.cloud';
+import { SITE_URL } from '@/lib/seo';
 
 export default function sitemap() {
   return [
     {
       url: SITE_URL,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 1,
     },
   ];
