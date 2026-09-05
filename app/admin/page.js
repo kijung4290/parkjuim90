@@ -228,6 +228,7 @@ export default function AdminPage() {
     const [message, setMessage] = useState(null); // { type: 'ok' | 'error', text }
     const [activeSection, setActiveSection] = useState('hero');
     const [uploadingStory, setUploadingStory] = useState(null); // 사진을 올리는 중인 기록의 순번
+    const [uploadingHero, setUploadingHero] = useState(null); // { index, field: 'url' | 'poster' }
 
     const isLoggedIn = Boolean(session);
 
@@ -404,6 +405,28 @@ export default function AdminPage() {
             [slides[index], slides[target]] = [slides[target], slides[index]];
             return slides;
         });
+
+    const uploadHeroMedia = async (index, file, field = 'url') => {
+        if (!file) return;
+
+        setUploadingHero({ index, field });
+        try {
+            const form = new FormData();
+            form.append('file', file);
+            form.append('folder', 'hero');
+
+            const response = await authorizedFetch('/api/upload', { method: 'POST', body: form });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.error || '파일을 올리지 못했습니다.');
+
+            updateHeroSlide(index, { [field]: result.url });
+            notify('ok', `${field === 'poster' ? '영상 표지 사진' : '미디어 파일'}을 올렸습니다. [저장하기]를 눌러야 사이트에 반영됩니다.`);
+        } catch (error) {
+            notify('error', error.message);
+        } finally {
+            setUploadingHero(null);
+        }
+    };
 
     const updateProfile = (key, value) =>
         setData((prev) => ({ ...prev, profile: { ...prev.profile, [key]: value } }));
@@ -704,24 +727,123 @@ export default function AdminPage() {
                                             <Field label="설명" wide>
                                                 <textarea value={slide.description || ''} onChange={(e) => updateHeroSlide(index, { description: e.target.value })} placeholder="제목 아래에 표시할 짧은 설명" />
                                             </Field>
-                                            {slide.type !== 'quote' && (
-                                                <Field
-                                                    label={slide.type === 'video' ? '동영상 주소' : '이미지 주소'}
-                                                    hint={slide.type === 'video' ? 'YouTube·Vimeo·MP4·WebM 지원' : 'JPG·PNG·WebP 권장'}
-                                                    wide
-                                                >
-                                                    <input
-                                                        value={slide.url || ''}
-                                                        onChange={(e) => updateHeroSlide(index, { url: e.target.value })}
-                                                        placeholder={slide.type === 'video' ? 'https://youtu.be/... 또는 /videos/intro.mp4' : 'https://... 또는 /images/lecture.webp'}
-                                                    />
-                                                </Field>
+                                            {slide.type === 'image' && (
+                                                <div className="admin-field admin-span-all">
+                                                    <span>이미지 등록<em>(직접 사진 파일 올리기 또는 이미지 주소 입력)</em></span>
+                                                    <div className="admin-hero-upload-box">
+                                                        <label className={`button button--soft button--small${uploadingHero?.index === index && uploadingHero?.field === 'url' ? ' is-disabled' : ''}`}>
+                                                            <ImagePlus size={16} /> {uploadingHero?.index === index && uploadingHero?.field === 'url' ? '사진 올리는 중…' : '사진 파일 올리기'}
+                                                            <input
+                                                                type="file"
+                                                                className="admin-photos-input"
+                                                                accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                                                                disabled={Boolean(uploadingHero)}
+                                                                onChange={(e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (file) uploadHeroMedia(index, file, 'url');
+                                                                    e.target.value = '';
+                                                                }}
+                                                            />
+                                                        </label>
+                                                        <span className="admin-upload-or">또는</span>
+                                                        <input
+                                                            className="admin-hero-url-input"
+                                                            value={slide.url || ''}
+                                                            onChange={(e) => updateHeroSlide(index, { url: e.target.value })}
+                                                            placeholder="https://... 또는 /images/lecture.webp"
+                                                        />
+                                                        {slide.url && (
+                                                            <button
+                                                                type="button"
+                                                                className="button button--ghost button--small is-danger"
+                                                                onClick={() => updateHeroSlide(index, { url: '' })}
+                                                                title="주소 지우기"
+                                                            >
+                                                                지우기
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             )}
+
                                             {slide.type === 'video' && (
-                                                <Field label="영상 표지 이미지" hint="직접 동영상 파일일 때 사용" wide>
-                                                    <input value={slide.poster || ''} onChange={(e) => updateHeroSlide(index, { poster: e.target.value })} placeholder="/images/video-poster.webp" />
-                                                </Field>
+                                                <>
+                                                    <div className="admin-field admin-span-all">
+                                                        <span>동영상 등록<em>(MP4/WebM 파일 직접 올리기 또는 YouTube/Vimeo 링크)</em></span>
+                                                        <div className="admin-hero-upload-box">
+                                                            <label className={`button button--soft button--small${uploadingHero?.index === index && uploadingHero?.field === 'url' ? ' is-disabled' : ''}`}>
+                                                                <Film size={16} /> {uploadingHero?.index === index && uploadingHero?.field === 'url' ? '동영상 올리는 중…' : '동영상 파일 올리기 (최대 50MB)'}
+                                                                <input
+                                                                    type="file"
+                                                                    className="admin-photos-input"
+                                                                    accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                                                                    disabled={Boolean(uploadingHero)}
+                                                                    onChange={(e) => {
+                                                                        const file = e.target.files?.[0];
+                                                                        if (file) uploadHeroMedia(index, file, 'url');
+                                                                        e.target.value = '';
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                            <span className="admin-upload-or">또는</span>
+                                                            <input
+                                                                className="admin-hero-url-input"
+                                                                value={slide.url || ''}
+                                                                onChange={(e) => updateHeroSlide(index, { url: e.target.value })}
+                                                                placeholder="YouTube·Vimeo 주소 또는 직접 영상 주소"
+                                                            />
+                                                            {slide.url && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="button button--ghost button--small is-danger"
+                                                                    onClick={() => updateHeroSlide(index, { url: '' })}
+                                                                    title="주소 지우기"
+                                                                >
+                                                                    지우기
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="admin-field admin-span-all">
+                                                        <span>영상 표지 이미지 (선택)<em>(직접 동영상 파일일 때 표지 사진)</em></span>
+                                                        <div className="admin-hero-upload-box">
+                                                            <label className={`button button--soft button--small${uploadingHero?.index === index && uploadingHero?.field === 'poster' ? ' is-disabled' : ''}`}>
+                                                                <ImagePlus size={16} /> {uploadingHero?.index === index && uploadingHero?.field === 'poster' ? '표지 올리는 중…' : '표지 사진 올리기'}
+                                                                <input
+                                                                    type="file"
+                                                                    className="admin-photos-input"
+                                                                    accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                                                                    disabled={Boolean(uploadingHero)}
+                                                                    onChange={(e) => {
+                                                                        const file = e.target.files?.[0];
+                                                                        if (file) uploadHeroMedia(index, file, 'poster');
+                                                                        e.target.value = '';
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                            <span className="admin-upload-or">또는</span>
+                                                            <input
+                                                                className="admin-hero-url-input"
+                                                                value={slide.poster || ''}
+                                                                onChange={(e) => updateHeroSlide(index, { poster: e.target.value })}
+                                                                placeholder="/images/poster.webp 또는 https://..."
+                                                            />
+                                                            {slide.poster && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="button button--ghost button--small is-danger"
+                                                                    onClick={() => updateHeroSlide(index, { poster: '' })}
+                                                                    title="표지 지우기"
+                                                                >
+                                                                    지우기
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </>
                                             )}
+
                                             {slide.type !== 'quote' && (
                                                 <Field label="대체 설명" hint="사진·영상을 볼 수 없는 방문자에게 전달" wide>
                                                     <input value={slide.alt || ''} onChange={(e) => updateHeroSlide(index, { alt: e.target.value })} placeholder="강의 중인 사회복지사와 참여자들의 모습" />

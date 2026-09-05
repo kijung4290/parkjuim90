@@ -218,6 +218,35 @@
 .admin-slide-list { gap: 14px; }
 .admin-slide-editor { display: grid; gap: 22px; grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr); }
 .admin-preview-label { color: var(--muted); display: block; font-size: 0.7rem; font-weight: 700; margin-bottom: 7px; }
+
+.admin-hero-upload-box {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.admin-hero-upload-box label {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+.admin-hero-upload-box label.is-disabled {
+  cursor: progress;
+  opacity: 0.62;
+  pointer-events: none;
+}
+.admin-upload-or {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.admin-hero-url-input {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
 .admin-media-preview { aspect-ratio: 16 / 9; background: var(--forest-dark); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; position: relative; }
 .admin-media-preview > img,
 .admin-media-preview > video,
