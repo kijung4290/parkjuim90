@@ -5,11 +5,9 @@ import { getRandomNaverStories } from '@/lib/naverBlog';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import ServicesSection from '@/components/ServicesSection';
-import PhilosophySection from '@/components/PhilosophySection';
 import ArchiveSection from '@/components/ArchiveSection';
 import ExperienceSection from '@/components/ExperienceSection';
 import StorySection from '@/components/StorySection';
-import GuestbookSection from '@/components/GuestbookSection';
 import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 
@@ -36,14 +34,12 @@ export default async function Home() {
       <main id="main-content">
         <HeroSection hero={hero} profile={profile} projectCount={projects.length} />
         <ServicesSection />
-        <PhilosophySection philosophy={data.philosophy || []} />
         <ArchiveSection projects={projects} />
         <ExperienceSection experiences={data.experiences || []} />
         <StorySection
           stories={blogStories.length > 0 ? blogStories : (data.stories || [])}
           blogUrl={profile.blog}
         />
-        <GuestbookSection initialGuestbook={data.guestbook || []} />
         <ContactSection profile={profile} />
       </main>
       <Footer profile={profile} />

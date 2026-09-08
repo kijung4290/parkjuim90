@@ -48,13 +48,6 @@ export const ITEM_CHECKS = {
         return issues;
     },
 
-    philosophy: (item) => {
-        const issues = [];
-        if (isBlank(item?.title)) issues.push(problem('제목이 비어 있습니다.'));
-        if (isBlank(item?.desc)) issues.push(hint('설명을 넣으면 카드가 훨씬 잘 읽힙니다.'));
-        return issues;
-    },
-
     projects: (project) => {
         const issues = [];
         if (isBlank(project?.title)) issues.push(problem('제목이 비어 있습니다.'));
@@ -160,15 +153,6 @@ function checkProfile(data) {
     return issues;
 }
 
-function checkPhilosophy(data) {
-    const list = data.philosophy || [];
-    if (list.length === 0) return [hint('원칙을 등록하면 첫 화면 아래에 소개 카드가 생깁니다.')];
-
-    const issues = checkList(list, 'philosophy', (item, index) => nameOf(item.title, `${ordinal(index)} 원칙`));
-    if (list.length % 2 === 1) issues.push(hint('2열 카드로 보이므로 짝수 개일 때 가장 보기 좋습니다.'));
-    return issues;
-}
-
 function checkProjects(data) {
     const list = data.projects || [];
     if (list.length === 0) return [hint('프로젝트를 등록하면 ‘만든 도구’ 영역이 채워집니다.')];
@@ -201,7 +185,6 @@ function checkStories(data) {
 const SECTION_CHECKS = {
     hero: checkHero,
     profile: checkProfile,
-    philosophy: checkPhilosophy,
     projects: checkProjects,
     experiences: checkExperiences,
     stories: checkStories,

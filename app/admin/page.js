@@ -15,11 +15,9 @@ import { LoginScreen } from './components/LoginScreen';
 import { RecoveryBanner, Toast } from './components/Notices';
 import { HeroEditor } from './sections/HeroEditor';
 import { ProfileEditor } from './sections/ProfileEditor';
-import { PhilosophyEditor } from './sections/PhilosophyEditor';
 import { ProjectsEditor } from './sections/ProjectsEditor';
 import { ExperiencesEditor } from './sections/ExperiencesEditor';
 import { StoriesEditor } from './sections/StoriesEditor';
-import { GuestbookEditor } from './sections/GuestbookEditor';
 import { SettingsEditor } from './sections/SettingsEditor';
 import './admin.css';
 
@@ -122,13 +120,6 @@ export default function AdminPage() {
                         profile={data.profile || {}}
                         {...shared}
                     />
-                    <PhilosophyEditor
-                        section={sectionById('philosophy')}
-                        active={activeSection === 'philosophy'}
-                        issues={issues.philosophy}
-                        items={data.philosophy}
-                        {...shared}
-                    />
                     <ProjectsEditor
                         section={sectionById('projects')}
                         active={activeSection === 'projects'}
@@ -148,12 +139,6 @@ export default function AdminPage() {
                         active={activeSection === 'stories'}
                         issues={issues.stories}
                         items={data.stories}
-                        {...shared}
-                    />
-                    <GuestbookEditor
-                        section={sectionById('guestbook')}
-                        active={activeSection === 'guestbook'}
-                        entries={data.guestbook}
                         {...shared}
                     />
                     <SettingsEditor

@@ -31,7 +31,7 @@ npm run dev     # http://localhost:3000
    (배포 환경에서는 `supabase_schema.sql`의 5번 항목을 한 번 실행해두세요.)
 3. 항목을 수정하고 상단 **[저장하기]** 클릭(`Ctrl`+`S`) → 홈 화면에 바로 반영됩니다.
 
-수정할 수 있는 항목: 첫 화면 슬라이드 · 기본 정보 · 활동 지표 · 일하는 원칙 · 프로젝트 · 경력 · 기록 · 방명록(삭제).
+수정할 수 있는 항목: 첫 화면 슬라이드 · 기본 정보 · 활동 지표 · 프로젝트 · 경력 · 기록.
 
 관리자 화면이 도와주는 것들:
 
@@ -82,7 +82,6 @@ app/
     components/          여러 화면이 함께 쓰는 입력칸·목록·미리보기 부품
     sections/            항목별 편집 화면 (첫 화면 / 기본 정보 / 프로젝트 …)
   api/portfolio/       GET 조회 / POST 저장(로그인 필요)
-  api/guestbook/       POST 방명록 등록(공개)
   api/setup/migrate/   data/portfolio.json으로 초기화(로그인 필요)
 components/            홈 화면 섹션들
 lib/                   Supabase 클라이언트, 데이터 접근, 공유 상수

@@ -1,9 +1,7 @@
 import {
     BriefcaseBusiness,
-    Compass,
     FolderKanban,
     Image as ImageIcon,
-    MessagesSquare,
     NotebookText,
     Settings,
     UserRound,
@@ -35,14 +33,6 @@ export const SECTIONS = [
         guide: '첫 화면의 이름·활동 지표와 맨 아래 문의 영역에 함께 쓰이는 정보입니다.',
     },
     {
-        id: 'philosophy',
-        label: '일하는 원칙',
-        description: '나를 설명하는 가치',
-        icon: Compass,
-        preview: '/#philosophy',
-        guide: '첫 화면 바로 아래에서 2열 카드로 보이는 소개 문구입니다.',
-    },
-    {
         id: 'projects',
         label: '프로젝트',
         description: '만든 도구와 서비스',
@@ -65,14 +55,6 @@ export const SECTIONS = [
         icon: NotebookText,
         preview: '/#stories',
         guide: '‘기록’ 영역의 글 카드입니다. 첫 번째 글이 두 칸 너비로 크게 보입니다.',
-    },
-    {
-        id: 'guestbook',
-        label: '방명록',
-        description: '방문자 메시지 관리',
-        icon: MessagesSquare,
-        preview: '/#guestbook',
-        guide: '방문자가 직접 남긴 글입니다. 여기에서는 확인과 삭제만 할 수 있습니다.',
     },
     {
         id: 'settings',
@@ -116,7 +98,6 @@ export const LENGTH_HINTS = {
     slideTitle: 45,
     slideDescription: 80,
     introduction: 220,
-    philosophyDesc: 120,
     projectSummary: 90,
     storySummary: 90,
 };
@@ -134,13 +115,6 @@ export const createHeroSlide = (type) => ({
     url: '',
     poster: '',
     alt: '',
-});
-
-export const createPhilosophy = () => ({
-    id: createId('philosophy'),
-    title: '',
-    subtitle: '',
-    desc: '',
 });
 
 export const createProject = () => ({

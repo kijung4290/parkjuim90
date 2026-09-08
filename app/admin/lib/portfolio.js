@@ -15,20 +15,24 @@ export const fromLines = (text) =>
         .filter(Boolean);
 
 /** 저장된 데이터에 빠진 항목이 있어도 편집 화면이 깨지지 않도록 빈 값을 채웁니다. */
-export const normalizePortfolio = (json) => ({
-    ...json,
-    hero: {
-        ...DEFAULT_HERO,
-        ...(json?.hero || {}),
-        slides: Array.isArray(json?.hero?.slides) ? json.hero.slides : DEFAULT_HERO.slides,
-    },
-    profile: { stats: [], ...(json?.profile || {}) },
-    philosophy: json?.philosophy || [],
-    projects: json?.projects || [],
-    experiences: json?.experiences || [],
-    stories: json?.stories || [],
-    guestbook: json?.guestbook || [],
-});
+export const normalizePortfolio = (json) => {
+    const content = { ...(json || {}) };
+    delete content.philosophy;
+    delete content.guestbook;
+
+    return {
+        ...content,
+        hero: {
+            ...DEFAULT_HERO,
+            ...(json?.hero || {}),
+            slides: Array.isArray(json?.hero?.slides) ? json.hero.slides : DEFAULT_HERO.slides,
+        },
+        profile: { stats: [], ...(json?.profile || {}) },
+        projects: json?.projects || [],
+        experiences: json?.experiences || [],
+        stories: json?.stories || [],
+    };
+};
 
 /** 왼쪽 메뉴 옆에 보여줄 항목 개수입니다(개수가 없는 항목은 null). */
 export const getSectionCount = (data, id) => {

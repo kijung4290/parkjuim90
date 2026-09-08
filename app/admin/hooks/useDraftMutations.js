@@ -60,7 +60,7 @@ export function useDraftMutations(setData) {
             move: (index, delta) => mutateStats((list) => moveInList(list, index, delta)),
         };
 
-        /* ── 목록형 항목(원칙·프로젝트·경력·기록·방명록) ── */
+        /* ── 목록형 항목(프로젝트·경력·기록) ── */
         const list = {
             update: (key, index, patch) => mutateList(key, (items) => {
                 items[index] = { ...items[index], ...patch };

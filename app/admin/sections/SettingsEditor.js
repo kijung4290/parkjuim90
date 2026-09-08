@@ -80,7 +80,7 @@ export function SettingsEditor({ section, active, issues, busy, onReset, onSelec
                     </button>
                 </div>
                 <p className="admin-note">
-                    되돌린 내용은 복구할 수 없습니다. 방명록·기록·프로젝트에 직접 쓴 내용도 함께 사라지니 주의해주세요.
+                    되돌린 내용은 복구할 수 없습니다. 기록·프로젝트에 직접 쓴 내용도 함께 사라지니 주의해주세요.
                 </p>
             </section>
         </>
