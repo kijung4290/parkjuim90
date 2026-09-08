@@ -1,4 +1,4 @@
-import { ArrowUpRight, ClipboardCheck, CodeXml, GraduationCap, Laptop, Users } from 'lucide-react';
+import { ArrowUpRight, ClipboardCheck, CodeXml, FileSpreadsheet, GraduationCap, Laptop } from 'lucide-react';
 import { SERVICES } from '@/lib/seo';
 
 /**
@@ -10,10 +10,10 @@ import { SERVICES } from '@/lib/seo';
  */
 const ICONS = {
   'staff-training': GraduationCap,
-  competency: Users,
   'smartwork-training': Laptop,
   'smartwork-consulting': ClipboardCheck,
   'vibe-coding': CodeXml,
+  'custom-template': FileSpreadsheet,
 };
 
 export default function ServicesSection() {
@@ -28,8 +28,8 @@ export default function ServicesSection() {
           </span>
           <h2 className="section-title" id="services-title">현장에서 바로 쓰는 교육과 컨설팅을 진행합니다.</h2>
           <p className="section-description">
-            사회복지 직원교육과 직원역량강화교육부터 스마트워크 교육·컨설팅, 바이브코딩 교육까지
-            기관의 상황을 먼저 듣고 필요한 만큼만 구성합니다.
+            사회복지 직원교육·직원역량강화부터 스마트워크 교육·컨설팅, 바이브코딩 교육,
+            업무양식 맞춤 제작까지 기관의 상황을 먼저 듣고 필요한 만큼만 구성합니다.
           </p>
         </header>
 

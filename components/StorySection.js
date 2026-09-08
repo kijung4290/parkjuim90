@@ -105,6 +105,18 @@ export default function StorySection({ stories = [] }) {
             const limit = previewLimit(index);
             const preview = getStoryPreview(story, limit);
             const showsMore = hasMoreToRead(story, limit);
+            const storyCopy = (
+              <>
+                <h3>{story.title}</h3>
+                <p>{preview}</p>
+                {(showsMore || story.link) && (
+                  <span className="story-more">
+                    {story.link ? '블로그에서 전체 글 보기' : '전문 보기'}
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </span>
+                )}
+              </>
+            );
 
             return (
               <article className="story-card" key={story.id}>
@@ -130,19 +142,27 @@ export default function StorySection({ stories = [] }) {
                     </span>
                   </div>
                 </div>
-                {/* 카드 본문 전체가 전문 보기 버튼입니다(작은 링크를 겨냥하지 않아도 됩니다). */}
-                <button
-                  className="story-copy story-open"
-                  type="button"
-                  aria-label={`${story.title} 전문 보기`}
-                  onClick={() => setSelectedStory(story)}
-                >
-                  <h3>{story.title}</h3>
-                  <p>{preview}</p>
-                  {showsMore && (
-                    <span className="story-more">전문 보기 <ArrowRight size={14} aria-hidden="true" /></span>
-                  )}
-                </button>
+                {/* 블로그 글은 원문을 바로 열고, 내부 기록만 전문 모달을 엽니다. */}
+                {story.link ? (
+                  <a
+                    className="story-copy story-open"
+                    href={story.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${story.title} 블로그 전체 글 보기`}
+                  >
+                    {storyCopy}
+                  </a>
+                ) : (
+                  <button
+                    className="story-copy story-open"
+                    type="button"
+                    aria-label={`${story.title} 전문 보기`}
+                    onClick={() => setSelectedStory(story)}
+                  >
+                    {storyCopy}
+                  </button>
+                )}
                 <div className="story-footer">
                   <button
                     className={`like-button${liked ? ' is-liked' : ''}`}

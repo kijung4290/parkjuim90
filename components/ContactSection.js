@@ -15,16 +15,15 @@ import {
   MapPin,
   MessageSquareText,
   Send,
-  Users,
 } from 'lucide-react';
 import { SERVICES } from '@/lib/seo';
 
 const SERVICE_ICONS = {
   'staff-training': GraduationCap,
-  competency: Users,
   'smartwork-training': Laptop,
   'smartwork-consulting': ClipboardCheck,
   'vibe-coding': CodeXml,
+  'custom-template': FileSpreadsheet,
 };
 
 /**
@@ -39,13 +38,6 @@ const REQUEST_TYPES = [
     icon: SERVICE_ICONS[service.id] || GraduationCap,
     placeholder: service.placeholder,
   })),
-  {
-    id: 'template',
-    label: '업무양식 제작',
-    subject: '업무양식·자동화 제작 요청',
-    icon: FileSpreadsheet,
-    placeholder: '현재 반복하고 있는 업무, 필요한 양식이나 자동화 기능, 사용하는 프로그램을 알려주세요.',
-  },
   {
     id: 'collaboration',
     label: '도구 도입·협업',
@@ -118,7 +110,7 @@ export default function ContactSection({ profile }) {
               <span className="eyebrow-en" lang="en">Request & collaboration</span>
             </span>
             <h2 id="contact-title">필요한 일을 알려주시면<br />함께 방법을 찾겠습니다.</h2>
-            <p className="section-description">사회복지 직원교육과 직원역량강화교육, 스마트워크 교육·컨설팅, 바이브코딩 교육부터 반복 업무를 줄이는 양식·자동화 도구 제작까지 편하게 문의해주세요.</p>
+            <p className="section-description">사회복지 직원교육·직원역량강화, 스마트워크 교육·컨설팅, 바이브코딩 교육부터 반복 업무를 줄이는 업무양식 맞춤 제작까지 편하게 문의해주세요.</p>
 
             <div className="contact-list" role="list">
               <div className="contact-item" role="listitem">
