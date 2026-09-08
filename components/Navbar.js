@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { ArrowUpRight, ChevronDown, Menu, X } from 'lucide-react';
 import { NAV_LINKS } from '@/lib/navigation';
+import { BrandLockup } from '@/components/BrandLogo';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -48,38 +49,39 @@ export default function Navbar() {
 
   const closeMenu = () => setMobileMenuOpen(false);
 
-  const renderLinks = (onClick) =>
+  const renderMobileLinks = (onClick) =>
     NAV_LINKS.map((link) => (
-      <a
-        className={`nav-link${activeSection === link.id ? ' is-active' : ''}`}
-        href={`#${link.id}`}
-        key={link.id}
-        aria-current={activeSection === link.id ? 'true' : undefined}
-        onClick={onClick}
-      >
-        {link.label}
-      </a>
+      <div className="mobile-nav-group" key={link.id}>
+        <a className={`nav-link${activeSection === link.id ? ' is-active' : ''}`} href={`#${link.id}`} onClick={onClick}>
+          <strong>{link.label}</strong><span>{link.english}</span>
+        </a>
+        <div className="mobile-nav-children">
+          {link.children?.map((child) => <a href={`#${child.id}`} key={child.id} onClick={onClick}>{child.label}</a>)}
+        </div>
+      </div>
     ));
 
   return (
     <nav className={`site-nav${scrolled ? ' is-scrolled' : ''}`} aria-label="주요 메뉴">
       <div className="container nav-inner">
-        <Link className="brand" href="/" aria-label="스마트워커 박주임 홈">
-          <span className="brand-mark" aria-hidden="true">
-            <span className="brand-monogram">P/J</span>
-            <span className="brand-mark-status" />
-          </span>
-          <span className="brand-copy">
-            <span className="brand-name">스마트워커 박주임</span>
-            <span className="brand-role">
-              <span>스마트워크 교육 및 컨설팅</span>
-              <span className="brand-copy-accent" lang="en">Field → Tool</span>
-            </span>
-          </span>
+        <Link className="brand" href="/" aria-label="일잘알랩 홈">
+          <BrandLockup compact />
         </Link>
 
         <div className="desktop-nav">
-          <div className="nav-links">{renderLinks()}</div>
+          <div className="nav-groups">
+            {NAV_LINKS.map((link) => (
+              <div className="nav-group" key={link.id}>
+                <a className={`nav-group-trigger${activeSection === link.id ? ' is-active' : ''}`} href={`#${link.id}`}>
+                  {link.label}<ChevronDown size={13} aria-hidden="true" />
+                </a>
+                <div className="nav-dropdown">
+                  <p>{link.english}</p>
+                  {link.children?.map((child) => <a href={`#${child.id}`} key={child.id}>{child.label}</a>)}
+                </div>
+              </div>
+            ))}
+          </div>
           <a className="button button--primary button--small" href="#contact">
             협업 문의 <ArrowUpRight size={15} aria-hidden="true" />
           </a>
@@ -101,7 +103,7 @@ export default function Navbar() {
 
       {mobileMenuOpen && (
         <div className="mobile-nav" id="mobile-navigation">
-          {renderLinks(closeMenu)}
+          {renderMobileLinks(closeMenu)}
           <a className="button button--primary" href="#contact" onClick={closeMenu}>
             협업 문의 <ArrowUpRight size={16} aria-hidden="true" />
           </a>

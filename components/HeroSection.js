@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { DEFAULT_HERO, DEFAULT_PROFILE } from '@/lib/defaults';
 import { getVideoEmbedUrl } from '@/lib/heroMedia';
+import { BrandSymbol } from '@/components/BrandLogo';
 
 const TYPE_LABELS = {
   quote: 'FIELD NOTE',
@@ -94,8 +95,8 @@ function SlideMedia({ slide, shouldPlay }) {
 function HeroActions() {
   return (
     <div className="hero-slide-actions">
-      <a className="button button--hero" href="#archive">
-        만든 도구 둘러보기 <ArrowRight size={17} aria-hidden="true" />
+      <a className="button button--hero" href="#academy">
+        일잘알 클래스 보기 <ArrowRight size={17} aria-hidden="true" />
       </a>
       <a className="button button--hero-quiet" href="#contact">협업 문의하기</a>
     </div>
@@ -233,6 +234,10 @@ export default function HeroSection({ hero, profile }) {
           aria-label={`${activeIndex + 1} / ${slides.length}`}
         >
           <div className="hero-slide-copy" key={slideKey}>
+            <div className="hero-lab-signature">
+              <BrandSymbol />
+              <span><strong>일잘알랩</strong><small lang="en">SMARTWORK LAB</small></span>
+            </div>
             <div className="hero-slide-badges">
               <span className="hero-slide-kicker">
                 {activeSlide.eyebrow || TYPE_LABELS[activeSlide.type] || 'FIELD NOTE'}

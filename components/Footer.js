@@ -1,4 +1,5 @@
 import { FOOTER_LINKS } from '@/lib/navigation';
+import { BrandLockup } from '@/components/BrandLogo';
 
 export default function Footer({ profile }) {
   return (
@@ -7,31 +8,24 @@ export default function Footer({ profile }) {
         <div className="footer-top">
           <div className="footer-brand">
             <div className="brand">
-              <span className="brand-mark" aria-hidden="true">
-                <span className="brand-monogram">P/J</span>
-                <span className="brand-mark-status" />
-              </span>
-              <span className="brand-copy">
-                <span className="brand-name">스마트워커 박주임</span>
-                <span className="brand-role">{profile?.domain || 'parkjuim90.cloud'}</span>
-              </span>
+              <BrandLockup />
             </div>
             <p className="footer-manifesto">
-              <strong className="footer-manifesto-lead">현장에서 묻고, 함께 쓰는 도구로 답합니다.</strong>
-              <span className="footer-manifesto-body">사회복지 현장의 목소리를 듣고, 사람에게 돌아가는 시간을 만드는 실용적인 소프트웨어를 기록합니다.</span>
+              <strong className="footer-manifesto-lead">일을 더 잘 아는, 더 스마트한 방법.</strong>
+              <span className="footer-manifesto-body">교육, 컨설팅, 도구 제작으로 사람의 일에 더 나은 가능성을 만듭니다.</span>
             </p>
           </div>
 
           <nav className="footer-links" aria-label="하단 메뉴">
             {FOOTER_LINKS.map((link) => (
-              <a href={`#${link.id}`} key={link.id}>{link.label}</a>
+              <a href={`#${link.id}`} key={link.id}><strong>{link.label}</strong><span>{link.english}</span></a>
             ))}
           </nav>
         </div>
 
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} JU-IM PARK. ALL RIGHTS RESERVED.</span>
-          <span className="footer-build-note">FIELD → TOOL · DESIGNED & BUILT IN WONJU</span>
+          <span>© {new Date().getFullYear()} SMARTWORKLAB. ALL RIGHTS RESERVED.</span>
+          <span className="footer-build-note">WORK SMARTER · MAKE WORK HUMAN</span>
         </div>
       </div>
     </footer>

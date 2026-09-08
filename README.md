@@ -51,7 +51,7 @@ npm run dev     # http://localhost:3000
 | --- | --- |
 | 검색 결과 제목·설명, 키워드, OG/트위터 카드 | `app/layout.js` |
 | 구조화 데이터(JSON-LD): Person · ProfessionalService · Service 5종 | `app/layout.js` |
-| 화면에 보이는 **교육·컨설팅 안내** 카드 | `components/ServicesSection.js` |
+| 화면에 보이는 **일잘알 클래스·컨설팅** 카드 | `components/ServicesSection.js` |
 | 문의 폼의 요청 종류와 메일 제목 | `components/ContactSection.js` |
 | sitemap · robots의 사이트 주소 | `app/sitemap.js`, `app/robots.js` |
 

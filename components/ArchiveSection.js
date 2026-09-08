@@ -180,17 +180,23 @@ export default function ArchiveSection({ projects = [] }) {
   }, [isShowcaseRotating, safeShowcaseIndex, showcaseCount]);
 
   return (
-    <section className="section section--white" id="archive" aria-labelledby="archive-title">
+    <section className="section section--white" id="tools" aria-labelledby="archive-title">
       <div className="container">
         <header className="section-head">
           <span className="eyebrow">
-            <span className="eyebrow-ko">현장 도구 아카이브</span>
+            <span className="eyebrow-ko">일잘알 도구실</span>
             <span className="eyebrow-divider" aria-hidden="true">/</span>
-            <span className="eyebrow-en" lang="en">Smart work education & tools</span>
+            <span className="eyebrow-en" lang="en">SMARTWORKLAB Tools</span>
           </span>
-          <h2 className="section-title" id="archive-title">스마트워크 교육에서 바로 쓰는 현장 도구</h2>
-          <p className="section-description">스마트워커 박주임이 스마트워크 교육, 직원역량강화교육, 바이브코딩 교육과 스마트워크 컨설팅 현장에서 활용하는 도구입니다. 반복되는 기록과 행정을 줄이는 실무형 웹앱을 직접 기획하고 개발했습니다.</p>
+          <h2 className="section-title" id="archive-title">일을 바꾸는 도구를<br />직접 만듭니다</h2>
+          <p className="section-description">스마트워크 교육과 컨설팅 현장에서 발견한 문제를 실제로 사용할 수 있는 웹앱과 자동화 프로그램으로 구현합니다.</p>
         </header>
+
+        <div className="tool-focus-grid">
+          <article id="made-tools"><span>01</span><strong>직접 제작한 업무도구</strong><p>현장의 흐름과 사용자의 언어를 담은 실무형 웹앱</p></article>
+          <article id="automation-programs"><span>02</span><strong>자동화 프로그램</strong><p>반복 입력과 집계, 문서 작업을 줄이는 연결 도구</p></article>
+          <article id="ai-use-cases"><span>03</span><strong>AI 적용 사례</strong><p>AI를 실제 업무에 안전하고 쓸모 있게 적용한 기록</p></article>
+        </div>
 
         <div className="archive-toolbar">
           <div className="filter-tabs" role="group" aria-label="프로젝트 카테고리">

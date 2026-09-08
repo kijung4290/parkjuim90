@@ -4,6 +4,7 @@ import { TOOL_CATALOG } from '@/data/tools';
 import { getRandomNaverStories } from '@/lib/naverBlog';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
+import BrandOverviewSection from '@/components/BrandOverviewSection';
 import ServicesSection from '@/components/ServicesSection';
 import ArchiveSection from '@/components/ArchiveSection';
 import ExperienceSection from '@/components/ExperienceSection';
@@ -33,9 +34,10 @@ export default async function Home() {
       <Navbar />
       <main id="main-content">
         <HeroSection hero={hero} profile={profile} projectCount={projects.length} />
+        <BrandOverviewSection />
+        <ExperienceSection experiences={data.experiences || []} />
         <ServicesSection />
         <ArchiveSection projects={projects} />
-        <ExperienceSection experiences={data.experiences || []} />
         <StorySection
           stories={blogStories.length > 0 ? blogStories : (data.stories || [])}
           blogUrl={profile.blog}

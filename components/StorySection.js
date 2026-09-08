@@ -83,17 +83,24 @@ export default function StorySection({ stories = [], blogUrl }) {
   const [coverImage, ...thumbImages] = selectedImages;
 
   return (
-    <section className="section section--white" id="stories" aria-labelledby="stories-title">
+    <section className="section section--white" id="notes" aria-labelledby="stories-title">
       <div className="container">
         <header className="section-head section-head--center">
           <span className="eyebrow">
-            <span className="eyebrow-ko">현장 기록</span>
+            <span className="eyebrow-ko">일잘알 기록소</span>
             <span className="eyebrow-divider" aria-hidden="true">/</span>
-            <span className="eyebrow-en" lang="en">Field stories</span>
+            <span className="eyebrow-en" lang="en">SMARTWORKLAB Notes</span>
           </span>
-          <h2 className="section-title" id="stories-title">만드는 과정과 현장에서 배운 것들</h2>
-          <p className="section-description">복지 현장의 고민, 도구 개발의 뒷이야기, 동료들과 나누고 싶은 스마트워크 경험을 기록합니다.</p>
+          <h2 className="section-title" id="stories-title">일을 더 잘하는 방법을<br />기록하고 나눕니다</h2>
+          <p className="section-description">AI 활용 이야기, 도구 제작 과정, 현장에서 발견한 업무혁신 인사이트를 꾸준히 기록합니다.</p>
         </header>
+
+        <div className="notes-topics" aria-label="기록 주제">
+          <a id="notes-blog" href={blogUrl || '#notes'} target={blogUrl ? '_blank' : undefined} rel={blogUrl ? 'noreferrer' : undefined}>블로그 <ArrowRight size={15} aria-hidden="true" /></a>
+          <span id="notes-ai">AI 활용 이야기</span>
+          <span id="notes-build">제작 과정</span>
+          <span id="notes-insight">업무혁신 인사이트</span>
+        </div>
 
         <div className="story-grid">
           {stories.map((story, index) => {

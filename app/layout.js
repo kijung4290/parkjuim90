@@ -1,5 +1,6 @@
 import "./globals.css";
 import "./impact-theme.css";
+import "./brand-refresh.css";
 import {
   SEO_DESCRIPTION,
   SEO_KEYWORDS,
@@ -18,11 +19,12 @@ export const metadata = {
   },
   description: SEO_DESCRIPTION,
   keywords: SEO_KEYWORDS,
-  applicationName: `${SITE_NAME} 포트폴리오`,
+  applicationName: SITE_NAME,
   category: "교육",
   creator: SITE_NAME,
   publisher: SITE_NAME,
   authors: [{ name: "박주임 (Ju-im Park)", url: SITE_URL }],
+  icons: { icon: "/images/smartworklab-logo.png" },
   alternates: { canonical: "/" },
   openGraph: {
     title: SEO_TITLE,
@@ -31,6 +33,7 @@ export const metadata = {
     siteName: SITE_NAME,
     locale: "ko_KR",
     type: "website",
+    images: [{ url: "/images/smartworklab-logo.png", width: 1254, height: 1254, alt: "일잘알랩 SMARTWORK LAB" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -64,7 +67,7 @@ const STRUCTURED_DATA = {
       "@type": "ProfilePage",
       "@id": `${SITE_URL}/#profilepage`,
       url: SITE_URL,
-      name: `${SITE_NAME} 포트폴리오`,
+      name: `${SITE_NAME} 공식 홈페이지`,
       isPartOf: { "@id": `${SITE_URL}/#website` },
       about: { "@id": `${SITE_URL}/#person` },
       inLanguage: "ko-KR",
@@ -84,7 +87,7 @@ const STRUCTURED_DATA = {
       "@type": "ProfessionalService",
       "@id": `${SITE_URL}/#service-provider`,
       name: `${SITE_NAME} 교육·컨설팅`,
-      url: `${SITE_URL}/#services`,
+      url: `${SITE_URL}/#academy`,
       description: SEO_DESCRIPTION,
       founder: { "@id": `${SITE_URL}/#person` },
       areaServed: { "@type": "Country", name: "대한민국" },
@@ -97,7 +100,7 @@ const STRUCTURED_DATA = {
       },
       hasOfferCatalog: {
         "@type": "OfferCatalog",
-        name: "교육·컨설팅 안내",
+        name: "SMARTWORKLAB Academy & Consulting",
         itemListElement: SERVICES.map((service, index) => ({
           "@type": "Offer",
           position: index + 1,
@@ -114,7 +117,7 @@ const STRUCTURED_DATA = {
       description: service.description,
       provider: { "@id": `${SITE_URL}/#person` },
       areaServed: { "@type": "Country", name: "대한민국" },
-      url: `${SITE_URL}/#services`,
+      url: `${SITE_URL}/#${service.section}`,
     })),
   ],
 };

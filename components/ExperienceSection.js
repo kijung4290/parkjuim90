@@ -6,12 +6,12 @@ export default function ExperienceSection({ experiences = [] }) {
       <div className="container experience-layout">
         <header className="section-head">
           <span className="eyebrow">
-            <span className="eyebrow-ko">경험의 궤적</span>
+            <span className="eyebrow-ko">스마트워커 박주임</span>
             <span className="eyebrow-divider" aria-hidden="true">/</span>
-            <span className="eyebrow-en" lang="en">Experience</span>
+            <span className="eyebrow-en" lang="en">People behind the lab</span>
           </span>
-          <h2 className="section-title" id="experience-title">복지 현장과 개발을 함께 걸어온 시간</h2>
-          <p className="section-description">지역사회에서 쌓은 경험을 바탕으로, 실제 업무에 오래 남는 디지털 도구를 만듭니다.</p>
+          <h2 className="section-title" id="experience-title">현장을 알고, 변화를 직접 만드는 사람</h2>
+          <p className="section-description">사회복지 실무 경험을 바탕으로 교육하고, 업무를 진단하고, 필요한 도구를 직접 만듭니다.</p>
         </header>
 
         <div className="timeline" role="list" aria-label="경력 목록">

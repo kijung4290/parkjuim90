@@ -37,7 +37,7 @@ export const SECTIONS = [
         label: '프로젝트',
         description: '만든 도구와 서비스',
         icon: FolderKanban,
-        preview: '/#archive',
+        preview: '/#tools',
         guide: '‘만든 도구’ 영역의 카드 목록입니다. 방문자가 카테고리로 걸러 보거나 검색할 수 있습니다.',
     },
     {
@@ -53,7 +53,7 @@ export const SECTIONS = [
         label: '기록',
         description: '글과 현장 이야기',
         icon: NotebookText,
-        preview: '/#stories',
+        preview: '/#notes',
         guide: '‘기록’ 영역의 글 카드입니다. 첫 번째 글이 두 칸 너비로 크게 보입니다.',
     },
     {
