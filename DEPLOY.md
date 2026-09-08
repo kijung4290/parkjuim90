@@ -76,6 +76,11 @@ Render might take a few minutes to build and deploy.
     *   The uploader stores files in the Supabase Storage bucket `portfolio-media`. Run the storage section of `supabase_schema.sql` once (Supabase Dashboard > SQL Editor) to create the bucket and its public-read policy.
     *   Uploads are written with `SUPABASE_SERVICE_ROLE_KEY`, so that variable must be set in the deployment environment. Without it the request is rejected by row level security.
     *   Each photo must be a JPG, PNG, WEBP, GIF, or AVIF file of 5MB or less.
+*   **Admin login is not blocked after repeated failures:**
+    *   Two failed attempts from one IP block that IP for 5 minutes. The counter lives in the `admin_login_attempts` table, because serverless instances do not share memory — a counter kept in memory alone resets on a cold start and the block can be bypassed.
+    *   Run section 5 of `supabase_schema.sql` once (Supabase Dashboard > SQL Editor). It is safe to run on an existing project; it creates only the new table and deletes nothing.
+    *   `SUPABASE_SERVICE_ROLE_KEY` must be set in the deployment environment. The table has no row level security policy, so only the service role key can read and write it.
+    *   Without the table or the key, login still works but the block falls back to per-instance memory.
 
 ## Updating your site
 Whenever you push changes to GitHub (`git push`), Vercel or Render will automatically redeploy your site with the updates!

@@ -26,6 +26,9 @@ npm run dev     # http://localhost:3000
 1. `http://localhost:3000/admin` 접속
 2. **Supabase 계정(이메일/비밀번호)으로 로그인**
    계정은 Supabase 대시보드 > Authentication > Users에서 추가합니다.
+   비밀번호를 두 번 틀리면 그 IP는 5분간 로그인할 수 없습니다.
+   이 차단 기록은 Supabase의 `admin_login_attempts` 표에 남습니다.
+   (배포 환경에서는 `supabase_schema.sql`의 5번 항목을 한 번 실행해두세요.)
 3. 항목을 수정하고 상단 **[저장하기]** 클릭(`Ctrl`+`S`) → 홈 화면에 바로 반영됩니다.
 
 수정할 수 있는 항목: 첫 화면 슬라이드 · 기본 정보 · 활동 지표 · 일하는 원칙 · 프로젝트 · 경력 · 기록 · 방명록(삭제).

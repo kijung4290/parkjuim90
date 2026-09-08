@@ -35,6 +35,30 @@ on storage.objects for select
 using (bucket_id = 'portfolio-media');
 
 --------------------------------------------------------------------------------
+-- 5. 관리자 로그인 실패 기록
+--    (이 항목만 따로 복사해 실행해도 안전합니다. 기존 데이터를 지우지 않습니다.)
+--
+--    Vercel 같은 서버리스 환경은 요청마다 다른 인스턴스가 처리할 수 있어서,
+--    서버 메모리에만 둔 실패 횟수는 쉽게 사라집니다(차단을 우회할 수 있습니다).
+--    그래서 실패 기록을 이 표에 남겨 모든 인스턴스가 같은 기록을 보게 합니다.
+create table if not exists admin_login_attempts (
+  ip_hash text primary key,
+  failed_count integer not null default 0,
+  first_failed_at timestamptz not null default now(),
+  blocked_until timestamptz
+);
+
+alter table admin_login_attempts enable row level security;
+
+-- 이 표에는 정책을 하나도 만들지 않습니다.
+-- 그래서 공개(anon) 키로는 읽기도 쓰기도 모두 막히고,
+-- RLS를 우회하는 서비스 롤 키(서버)만 기록을 남길 수 있습니다.
+-- IP는 서버 전용 키로 HMAC-SHA256 해싱해 저장하므로 원래 주소는 남지 않습니다.
+--
+-- 서비스 롤 키(SUPABASE_SERVICE_ROLE_KEY)가 없거나 이 표를 만들지 않으면
+-- 로그인은 그대로 되지만, 차단은 예전처럼 인스턴스별 메모리로만 유지됩니다.
+
+--------------------------------------------------------------------------------
 -- ⚠️ 중요: 위 "Public read" 정책만 두면 쓰기가 막히므로,
 --    배포 환경(Vercel 등)에 서버 전용 환경변수를 반드시 추가해야 합니다.
 --
