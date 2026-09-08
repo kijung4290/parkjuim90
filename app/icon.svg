@@ -1,14 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="박주임 포트폴리오">
-  <rect width="64" height="64" rx="16" fill="#17483b" />
-  <text
-    x="32"
-    y="43"
-    fill="#ffffff"
-    font-family="Consolas, 'SFMono-Regular', ui-monospace, monospace"
-    font-size="30"
-    font-weight="700"
-    letter-spacing="-2"
-    text-anchor="middle"
-  >PJ</text>
-  <circle cx="50" cy="16" r="5" fill="#e98c5b" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="일잘알랩">
+  <defs>
+    <linearGradient id="navy" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07375c" />
+      <stop offset="1" stop-color="#031d33" />
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#08a96d" />
+      <stop offset="1" stop-color="#18d28c" />
+    </linearGradient>
+  </defs>
+
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="#ffffff" stroke="#dce9e6" stroke-width="2" />
+
+  <!-- Pen: the primary SMARTWORKLAB mark -->
+  <g transform="rotate(-36 24 28)">
+    <rect x="8" y="21" width="31" height="11" rx="5.5" fill="url(#navy)" />
+    <path d="M38 21h8.5a5.5 5.5 0 0 1 0 11H38z" fill="url(#green)" />
+    <path d="M37.2 21.4v10.2" stroke="#ffffff" stroke-width="2.4" />
+  </g>
+
+  <!-- Idea spark -->
+  <circle cx="42" cy="14" r="5.2" fill="url(#green)" />
+  <path d="M42 4v4M50 7l-2.8 2.8M54 15h-4" fill="none" stroke="#12bf7d" stroke-linecap="round" stroke-width="2.6" />
+
+  <!-- Document -->
+  <path d="M36 34v17.5c0 2 1.5 3.5 3.5 3.5h13c2 0 3.5-1.5 3.5-3.5V39l-6-6H39.5c-2 0-3.5 1.5-3.5 3.5" fill="#ffffff" stroke="url(#navy)" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.3" />
+  <path d="M49 33v6h7M42 44h8M42 49h8" fill="none" stroke="url(#navy)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" />
 </svg>
