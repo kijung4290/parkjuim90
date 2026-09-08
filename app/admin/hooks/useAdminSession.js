@@ -28,9 +28,22 @@ export function useAdminSession() {
 
     const signIn = useCallback(async (email, password) => {
         setSigningIn(true);
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        setSigningIn(false);
-        return error ? error.message : null;
+        try {
+            const response = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) return result.error || '로그인하지 못했습니다.';
+
+            const { error } = await supabase.auth.setSession(result.session);
+            return error ? error.message : null;
+        } catch {
+            return '로그인 서버에 연결하지 못했습니다.';
+        } finally {
+            setSigningIn(false);
+        }
     }, []);
 
     const signOut = useCallback(async () => {
