@@ -64,15 +64,15 @@ export default function Navbar() {
   return (
     <nav className={`site-nav${scrolled ? ' is-scrolled' : ''}`} aria-label="주요 메뉴">
       <div className="container nav-inner">
-        <Link className="brand" href="/" aria-label="박주임의 현장 도구 작업실 홈">
+        <Link className="brand" href="/" aria-label="스마트워커 박주임 홈">
           <span className="brand-mark" aria-hidden="true">
             <span className="brand-monogram">P/J</span>
             <span className="brand-mark-status" />
           </span>
           <span className="brand-copy">
-            <span className="brand-name">박주임의 현장 도구 작업실</span>
+            <span className="brand-name">스마트워커 박주임</span>
             <span className="brand-role">
-              <span>복지 현장 × 실용 소프트웨어</span>
+              <span>스마트워크 교육 및 컨설팅</span>
               <span className="brand-copy-accent" lang="en">Field → Tool</span>
             </span>
           </span>

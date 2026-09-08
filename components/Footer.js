@@ -12,7 +12,7 @@ export default function Footer({ profile }) {
                 <span className="brand-mark-status" />
               </span>
               <span className="brand-copy">
-                <span className="brand-name">박주임의 현장 도구 작업실</span>
+                <span className="brand-name">스마트워커 박주임</span>
                 <span className="brand-role">{profile?.domain || 'parkjuim90.cloud'}</span>
               </span>
             </div>
