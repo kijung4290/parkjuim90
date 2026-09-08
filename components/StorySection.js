@@ -17,7 +17,7 @@ const previewLimit = (index) => (index === 0 ? 190 : 105);
  */
 const OPEN_PARAGRAPHS = 3;
 
-export default function StorySection({ stories = [] }) {
+export default function StorySection({ stories = [], blogUrl }) {
   const [likedIds, setLikedIds] = useState(() => new Set());
   const [selectedStory, setSelectedStory] = useState(null);
   const modalRef = useRef(null);
@@ -185,6 +185,19 @@ export default function StorySection({ stories = [] }) {
             );
           })}
         </div>
+
+        {blogUrl && (
+          <div className="story-list-actions">
+            <a
+              className="button button--secondary"
+              href={blogUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              전체 글 목록 보기 <ArrowRight size={15} aria-hidden="true" />
+            </a>
+          </div>
+        )}
       </div>
 
       {selectedStory && (

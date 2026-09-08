@@ -39,7 +39,10 @@ export default async function Home() {
         <PhilosophySection philosophy={data.philosophy || []} />
         <ArchiveSection projects={projects} />
         <ExperienceSection experiences={data.experiences || []} />
-        <StorySection stories={blogStories.length > 0 ? blogStories : (data.stories || [])} />
+        <StorySection
+          stories={blogStories.length > 0 ? blogStories : (data.stories || [])}
+          blogUrl={profile.blog}
+        />
         <GuestbookSection initialGuestbook={data.guestbook || []} />
         <ContactSection profile={profile} />
       </main>

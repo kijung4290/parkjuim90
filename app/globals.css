@@ -829,8 +829,9 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .like-button:hover, .like-button.is-liked { background: #fff0f2; color: var(--danger); }
 .read-label { align-items: center; color: var(--forest); display: inline-flex; font-size: 0.84rem; font-weight: 750; gap: 5px; }
 .story-thumb { border-radius: var(--radius-sm); margin-bottom: 20px; overflow: hidden; position: relative; }
-.story-thumb img { aspect-ratio: 16 / 9; object-fit: cover; width: 100%; }
+.story-thumb img { aspect-ratio: 16 / 9; background: var(--sage-soft); object-fit: contain; width: 100%; }
 .story-thumb-count { align-items: center; background: rgba(25, 31, 40, 0.72); border-radius: var(--radius-pill); bottom: 10px; color: var(--white); display: inline-flex; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; gap: 5px; padding: 4px 9px; position: absolute; right: 10px; }
+.story-list-actions { display: flex; justify-content: center; margin-top: 32px; }
 /* 카드 본문은 전문을 여는 버튼이므로 글 블록처럼 보이게 되돌립니다. */
 .story-open { color: inherit; text-align: left; width: 100%; }
 .story-more { align-items: center; color: var(--forest); display: inline-flex; font-size: 0.84rem; font-weight: 750; gap: 5px; margin-top: 16px; transition: gap 0.2s ease; }
