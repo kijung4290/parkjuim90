@@ -2,12 +2,20 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Clock, Heart, Images, X } from 'lucide-react';
+import { getStoryKeywords } from '@/lib/keywords';
 import { getStoryImages, getStoryParagraphs, getStoryPreview, hasMoreToRead } from '@/lib/stories';
 
 const FOCUSABLE = 'a[href], button:not(:disabled), input, textarea, [tabindex]:not([tabindex="-1"])';
 
 /** 첫 카드는 넓게 표시되므로 미리보기 글을 조금 더 길게 보여줍니다. */
 const previewLimit = (index) => (index === 0 ? 190 : 105);
+
+/**
+ * 전문 화면에서 처음부터 펼쳐두는 문단 수입니다(첫 문단 + 뒤 두 문단).
+ * 긴 글을 통째로 펼쳐 놓으면 창을 열자마자 글자벽이 보여서,
+ * 나머지는 ‘이어 읽기’로 접어둡니다.
+ */
+const OPEN_PARAGRAPHS = 3;
 
 export default function StorySection({ stories = [] }) {
   const [likedIds, setLikedIds] = useState(() => new Set());
@@ -64,6 +72,15 @@ export default function StorySection({ stories = [] }) {
   const selectedParagraphs = getStoryParagraphs(selectedStory?.content);
   const selectedLiked = selectedStory ? likedIds.has(selectedStory.id) : false;
   const selectedLikeCount = (selectedStory?.likes || 0) + (selectedLiked ? 1 : 0);
+  const selectedKeywords = selectedStory ? getStoryKeywords(selectedStory) : [];
+
+  // 첫 문단은 리드 문장으로 크게 두고, 세 문단을 넘어가는 뒷부분은 접어둡니다.
+  const [leadParagraph, ...restParagraphs] = selectedParagraphs;
+  const openParagraphs = restParagraphs.slice(0, OPEN_PARAGRAPHS - 1);
+  const foldedParagraphs = restParagraphs.slice(OPEN_PARAGRAPHS - 1);
+
+  // 사진은 첫 장만 크게 보여주고 나머지는 작은 칸으로 늘어놓습니다.
+  const [coverImage, ...thumbImages] = selectedImages;
 
   return (
     <section className="section section--white" id="stories" aria-labelledby="stories-title">
@@ -164,35 +181,77 @@ export default function StorySection({ stories = [] }) {
               <X size={20} />
             </button>
 
-            <div className="modal-intro">
-              <div>
-                <div className="modal-kicker">{selectedStory.tag}</div>
-                <div className="modal-subtitle">
-                  {[selectedStory.date, selectedStory.readTime && `${selectedStory.readTime} 읽기`]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </div>
-              </div>
+            <div className="modal-head">
+              <p className="story-modal-meta">
+                {[
+                  selectedStory.date,
+                  selectedStory.readTime && `${selectedStory.readTime} 읽기`,
+                  selectedImages.length > 0 && `사진 ${selectedImages.length}장`,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+              <h2 id="story-modal-title">{selectedStory.title}</h2>
             </div>
 
-            <h2 id="story-modal-title">{selectedStory.title}</h2>
-
-            {selectedImages.length > 0 && (
-              <div className="story-modal-gallery">
-                {selectedImages.map((image, imageIndex) => (
-                  <figure key={image.url}>
-                    <img src={image.url} alt={image.alt || `${selectedStory.title} 사진 ${imageIndex + 1}`} loading="lazy" />
-                    {image.alt && <figcaption>{image.alt}</figcaption>}
-                  </figure>
+            {/* 분류와 키워드를 먼저 보여줘서 무슨 이야기인지 훑고 들어가게 합니다. */}
+            {selectedKeywords.length > 0 && (
+              <ul className="keyword-row" aria-label="핵심 키워드">
+                {selectedKeywords.map((keyword, keywordIndex) => (
+                  <li className={`keyword-chip${keywordIndex === 0 ? ' keyword-chip--lead' : ''}`} key={keyword}>
+                    {keyword}
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
 
-            <div className="story-modal-body">
-              {selectedParagraphs.length > 0
-                ? selectedParagraphs.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)
-                : <p>아직 본문이 등록되지 않은 기록입니다.</p>}
-            </div>
+            {coverImage && (
+              <figure className="story-modal-cover">
+                <img
+                  src={coverImage.url}
+                  alt={coverImage.alt || `${selectedStory.title} 현장 사진`}
+                  loading="lazy"
+                />
+                {coverImage.alt && <figcaption>{coverImage.alt}</figcaption>}
+              </figure>
+            )}
+
+            {thumbImages.length > 0 && (
+              <ul className="story-modal-thumbs" aria-label={`${selectedStory.title} 사진 ${thumbImages.length}장 더`}>
+                {thumbImages.map((image, imageIndex) => (
+                  <li key={image.url}>
+                    <img
+                      src={image.url}
+                      alt={image.alt || `${selectedStory.title} 사진 ${imageIndex + 2}`}
+                      loading="lazy"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {leadParagraph ? (
+              <>
+                <p className="modal-lead">{leadParagraph}</p>
+
+                {openParagraphs.length > 0 && (
+                  <div className="story-modal-body">
+                    {openParagraphs.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
+                  </div>
+                )}
+
+                {foldedParagraphs.length > 0 && (
+                  <details className="modal-more">
+                    <summary>{`이어 읽기 (${foldedParagraphs.length}문단 더)`}</summary>
+                    <div className="story-modal-body">
+                      {foldedParagraphs.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
+                    </div>
+                  </details>
+                )}
+              </>
+            ) : (
+              <p className="modal-lead">아직 본문이 등록되지 않은 기록입니다.</p>
+            )}
 
             <div className="story-modal-footer">
               <button
@@ -216,6 +275,7 @@ export default function StorySection({ stories = [] }) {
           </article>
         </div>
       )}
+
     </section>
   );
 }

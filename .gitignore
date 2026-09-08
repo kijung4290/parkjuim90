@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ui audit (로컬 크롬 프로필과 화면 캡처 · 커밋하지 않습니다)
+/.ui-audit/

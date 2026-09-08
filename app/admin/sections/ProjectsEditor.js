@@ -75,6 +75,15 @@ export function ProjectsEditor({ section, active, issues, items, mutations }) {
                         </Field>
 
                         <LineListField
+                            label="핵심 키워드"
+                            hint="한 줄에 하나씩 · 비우면 부제를 씁니다"
+                            value={project.keywords}
+                            onChange={(keywords) => patch(index, { keywords })}
+                            placeholder={'출석 관리\nQR 코드\n태블릿 입력'}
+                            wide
+                        />
+
+                        <LineListField
                             label="주요 기능"
                             value={project.highlights}
                             onChange={(highlights) => patch(index, { highlights })}

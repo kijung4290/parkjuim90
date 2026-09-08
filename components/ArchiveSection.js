@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, Pause, Play, Search, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, Layers, Pause, Play, Search, X } from 'lucide-react';
 import { ProjectIcon } from '@/components/projectIcons';
+import { VisualGlyph } from '@/components/VisualGlyph';
+import { getProjectKeywords } from '@/lib/keywords';
 import { PROJECT_CATEGORIES } from '@/lib/projectMeta';
 
 const CATEGORIES = [{ id: 'all', label: '전체' }, ...PROJECT_CATEGORIES];
@@ -10,6 +12,8 @@ const INITIAL_INDEX_SIZE = 11;
 const SHOWCASE_INTERVAL = 2000;
 
 const padNumber = (value) => String(value).padStart(2, '0');
+
+const compact = (value) => String(value ?? '').replace(/s+/g, ' ').trim();
 
 const FOCUSABLE = 'a[href], button:not(:disabled), input, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -59,6 +63,13 @@ export default function ArchiveSection({ projects = [] }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const modalRef = useRef(null);
   const selectedProjectLinks = getProjectLinks(selectedProject);
+  const selectedKeywords = selectedProject ? getProjectKeywords(selectedProject) : [];
+
+  // 요약과 상세 설명이 같은 글일 때가 많습니다(도구 목록에서 옮겨온 데이터가 그렇습니다).
+  // 같은 문장을 두 번 보여주지 않도록, 서로 다를 때만 접힌 설명을 답니다.
+  const selectedLead = compact(selectedProject?.summary) || compact(selectedProject?.description);
+  const selectedDetail = compact(selectedProject?.description);
+  const hasSeparateDetail = Boolean(selectedDetail) && selectedDetail !== selectedLead;
 
   // 모달을 열면 포커스를 안으로 가두고, 닫으면 원래 자리로 되돌립니다.
   useEffect(() => {
@@ -405,38 +416,64 @@ export default function ArchiveSection({ projects = [] }) {
               <X size={20} />
             </button>
 
-            <div className="modal-intro">
-              <span className="icon-box"><ProjectIcon name={selectedProject.icon} size={22} /></span>
-              <div>
-                <div className="modal-kicker">{selectedProject.categoryLabel}</div>
-                <div className="modal-subtitle">{selectedProject.subtitle}</div>
-              </div>
+            {/* 긴 글보다 그림이 먼저 보이도록 도형 한 장을 맨 위에 둡니다. */}
+            <VisualGlyph
+              id={selectedProject.id}
+              icon={selectedProject.icon}
+              iconSize={34}
+              className="visual-glyph--modal"
+            />
+
+            <div className="modal-head">
+              {selectedProject.badge && <span className="modal-badge">{selectedProject.badge}</span>}
+              <h2 id="project-modal-title">{selectedProject.title}</h2>
             </div>
 
-            <h2 id="project-modal-title">{selectedProject.title}</h2>
-            <p className="modal-description">{selectedProject.description}</p>
+            {/* 카테고리·부제·키워드를 문장 대신 칩으로 훑어보게 합니다. */}
+            {selectedKeywords.length > 0 && (
+              <ul className="keyword-row" aria-label="핵심 키워드">
+                {selectedKeywords.map((keyword, keywordIndex) => (
+                  <li className={`keyword-chip${keywordIndex === 0 ? ' keyword-chip--lead' : ''}`} key={keyword}>
+                    {keyword}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {selectedLead && <p className="modal-lead">{selectedLead}</p>}
+
+            {hasSeparateDetail && (
+              <details className="modal-more">
+                <summary>자세한 설명 보기</summary>
+                <p>{selectedDetail}</p>
+              </details>
+            )}
 
             {selectedProject.highlights?.length > 0 && (
-              <section className="modal-section" aria-labelledby="feature-title">
-                <h3 id="feature-title">주요 기능과 특징</h3>
-                <ul className="highlight-list">
-                  {selectedProject.highlights.map((item) => (
-                    <li className="highlight" key={item}>
-                      <CheckCircle2 size={15} aria-hidden="true" />
-                      <span>{item}</span>
+              <section className="modal-section modal-section--features" aria-labelledby="feature-title">
+                <h3 id="feature-title">
+                  주요 기능
+                  <span className="modal-section__count">{selectedProject.highlights.length}</span>
+                </h3>
+                <ul className="feature-grid">
+                  {selectedProject.highlights.map((item, itemIndex) => (
+                    <li className="feature-cell" key={item}>
+                      <span className="feature-cell__index" aria-hidden="true">{padNumber(itemIndex + 1)}</span>
+                      <CheckCircle2 className="feature-cell__check" size={15} aria-hidden="true" />
+                      <span className="feature-cell__text">{item}</span>
                     </li>
                   ))}
                 </ul>
               </section>
             )}
 
+            {/* 기술 스택은 제목 붙은 칸 대신 한 줄로 줄였습니다. */}
             {selectedProject.techStack?.length > 0 && (
-              <section className="modal-section" aria-labelledby="stack-title">
-                <h3 id="stack-title">기술 스택</h3>
-                <div className="tag-row">
-                  {selectedProject.techStack.map((tech) => <span className="tag" key={tech}>{tech}</span>)}
-                </div>
-              </section>
+              <p className="modal-stack">
+                <Layers size={14} aria-hidden="true" />
+                <span className="sr-only">기술 스택: </span>
+                {selectedProject.techStack.join(' · ')}
+              </p>
             )}
 
             <div className="modal-actions">
@@ -460,6 +497,7 @@ export default function ArchiveSection({ projects = [] }) {
           </article>
         </div>
       )}
+
     </section>
   );
 }

@@ -5,7 +5,7 @@ import { getStoryImages } from '@/lib/stories';
 import { createStory, LENGTH_HINTS } from '../constants';
 import { countItemProblems } from '../lib/checklist';
 import { EditorList } from '../components/EditorList';
-import { Field } from '../components/Field';
+import { Field, LineListField } from '../components/Field';
 import { SectionShell } from '../components/SectionShell';
 import { StoryImageEditor } from '../components/StoryImageEditor';
 
@@ -76,6 +76,15 @@ export function StoriesEditor({ section, active, issues, items, mutations, uploa
                                     placeholder="홈 화면 카드에 보여줄 한 줄 요약"
                                 />
                             </Field>
+
+                            <LineListField
+                                label="핵심 키워드"
+                                hint="한 줄에 하나씩 · 전문 화면에서 분류 옆에 칩으로 보입니다"
+                                value={story.keywords}
+                                onChange={(keywords) => patch(index, { keywords })}
+                                placeholder={'사례관리\n가계도\n업무 자동화'}
+                                wide
+                            />
 
                             <Field label="내용" hint="(전문 화면에 보입니다 · 빈 줄 하나로 문단을 나눕니다)" wide>
                                 <textarea

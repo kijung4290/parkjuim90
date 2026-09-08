@@ -670,15 +670,139 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 /* Modal */
 .modal-backdrop { align-items: center; background: rgba(25, 31, 40, 0.62); display: flex; inset: 0; justify-content: center; padding: 22px; position: fixed; z-index: 300; }
 .project-modal { background: var(--surface); border-radius: var(--radius-lg); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28); max-height: 90vh; max-width: 680px; overflow-y: auto; padding: clamp(28px, 5vw, 44px); position: relative; width: 100%; }
-.modal-close { align-items: center; background: var(--paper); border-radius: 50%; color: var(--muted); display: flex; height: 40px; justify-content: center; position: absolute; right: 22px; top: 22px; width: 40px; }
-.modal-intro { align-items: center; display: flex; gap: 12px; margin-bottom: 20px; padding-right: 48px; }
-.modal-kicker { color: var(--forest); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; }
-.modal-subtitle { color: var(--muted); font-size: 0.84rem; }
+/* 닫기 버튼은 맨 위 그림 위에 떠 있으므로 배경과 층을 함께 줍니다. */
+.modal-close { align-items: center; background: var(--paper); border-radius: 50%; color: var(--muted); display: flex; height: 40px; justify-content: center; position: absolute; right: 22px; top: 22px; width: 40px; z-index: 2; }
 .project-modal h2 { font-family: var(--font-display); font-size: clamp(1.7rem, 4vw, 2.35rem); letter-spacing: -0.045em; line-height: 1.25; }
-.modal-description { color: var(--ink-soft); line-height: 1.8; margin: 18px 0 26px; }
 .modal-section { border-top: 1px solid var(--line); padding: 22px 0; }
 .modal-section h3 { font-size: 0.9rem; margin-bottom: 12px; }
 .modal-actions { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 8px; }
+
+/* 상세 화면은 그림 → 제목 → 키워드 → 한 문장 → 접힌 설명 순서로 읽힙니다.
+   글을 지우는 대신, 창을 열자마자 보이는 양을 줄여서 훑어보기 쉽게 만드는 방식입니다. */
+.modal-head { display: grid; gap: 10px; justify-items: start; padding-right: 48px; }
+.modal-badge {
+  background: var(--sage-soft);
+  border-radius: var(--radius-pill);
+  color: var(--forest-dark);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  padding: 5px 11px;
+}
+
+.keyword-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+.keyword-chip {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  color: var(--ink-soft);
+  font-size: 0.79rem;
+  font-weight: 700;
+  padding: 6px 12px;
+}
+/* 첫 칩은 분류입니다. 상세 화면에서 분류를 보여주는 유일한 자리라 색을 채워 구분합니다. */
+.keyword-chip--lead { background: var(--forest); border-color: var(--forest); color: var(--white); }
+
+.modal-lead { color: var(--ink-soft); font-size: 1.04rem; line-height: 1.75; margin-top: 22px; }
+
+/* 긴 설명은 접어둡니다(details라서 자바스크립트 없이 열립니다). */
+.modal-more { margin-top: 14px; }
+.modal-more > summary {
+  align-items: center;
+  color: var(--forest);
+  cursor: pointer;
+  display: flex;
+  font-size: 0.85rem;
+  font-weight: 750;
+  gap: 7px;
+  list-style: none;
+  padding: 8px 0;
+}
+.modal-more > summary::-webkit-details-marker { display: none; }
+.modal-more > summary::after {
+  border-bottom: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  content: "";
+  height: 6px;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.2s ease;
+  width: 6px;
+}
+.modal-more[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+.modal-more > p { color: var(--muted); line-height: 1.8; margin-top: 4px; }
+
+/* 주요 기능은 글머리표 목록 대신 번호 붙은 칸으로 늘어놓습니다. */
+.modal-section--features h3 { align-items: center; display: flex; gap: 8px; }
+.modal-section__count {
+  background: var(--sage-soft);
+  border-radius: var(--radius-pill);
+  color: var(--forest-dark);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+.feature-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.feature-cell {
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 5px 9px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 13px 14px;
+}
+.feature-cell__index { color: var(--muted-light); font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; grid-column: 1 / -1; letter-spacing: 0.06em; }
+.feature-cell__check { color: var(--forest); margin-top: 3px; }
+.feature-cell__text { color: var(--ink-soft); font-size: 0.86rem; line-height: 1.6; }
+
+/* 기술 스택은 제목 붙은 칸을 빼고 한 줄로 줄였습니다. */
+.modal-stack {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  gap: 8px;
+  padding: 18px 0 22px;
+}
+.modal-stack svg { color: var(--forest); flex: 0 0 auto; }
+
+/* 도구마다 사진을 준비할 수 없어서, 항목 번호로 고른 도형을 그림 대신 씁니다. */
+.visual-glyph {
+  align-items: center;
+  background: var(--sage-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--forest);
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+.visual-glyph--1 { background: var(--sage); }
+.visual-glyph--2 { background: var(--paper); }
+.visual-glyph__pattern { height: 100%; left: 0; position: absolute; top: 0; width: 100%; }
+.visual-glyph__mark {
+  align-items: center;
+  background: var(--surface);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  color: var(--forest);
+  display: inline-flex;
+  height: 74px;
+  justify-content: center;
+  position: relative;
+  width: 74px;
+}
+.glyph-ink { fill: currentColor; opacity: 0.14; }
+.glyph-accent { fill: var(--apricot); opacity: 0.4; }
+.glyph-ink-stroke { fill: none; opacity: 0.16; stroke: currentColor; stroke-width: 2; }
+.glyph-accent-stroke { fill: none; opacity: 0.5; stroke: var(--apricot); stroke-width: 2; }
+
+.visual-glyph--modal { aspect-ratio: 16 / 5; margin-bottom: 24px; width: 100%; }
 
 /* Experience */
 .experience-layout { display: grid; gap: 72px; grid-template-columns: minmax(240px, 0.7fr) minmax(0, 1.3fr); }
@@ -713,11 +837,14 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .story-open:hover .story-more { gap: 9px; }
 
 /* 기록 전문 모달 */
-.story-modal-gallery { display: grid; gap: 14px; margin: 22px 0 0; }
-.story-modal-gallery img { border-radius: var(--radius-sm); width: 100%; }
-.story-modal-gallery figcaption { color: var(--muted); font-size: 0.8rem; margin-top: 7px; }
-.story-modal-body { color: var(--ink-soft); display: grid; gap: 16px; line-height: 1.85; margin: 24px 0 26px; }
-.story-modal-footer { align-items: center; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding-top: 18px; }
+.story-modal-meta { color: var(--muted); font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.02em; }
+.story-modal-cover { margin-top: 22px; }
+.story-modal-cover img { border-radius: var(--radius-md); width: 100%; }
+.story-modal-cover figcaption { color: var(--muted); font-size: 0.8rem; margin-top: 8px; }
+.story-modal-thumbs { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px; }
+.story-modal-thumbs img { aspect-ratio: 4 / 3; border-radius: var(--radius-sm); object-fit: cover; width: 100%; }
+.story-modal-body { color: var(--ink-soft); display: grid; gap: 16px; line-height: 1.85; margin-top: 18px; }
+.story-modal-footer { align-items: center; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; margin-top: 26px; padding-top: 18px; }
 
 /* Guestbook */
 .guestbook-layout { align-items: start; display: grid; gap: 32px; grid-template-columns: minmax(300px, 390px) 1fr; }
@@ -862,6 +989,10 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
   .modal-backdrop { align-items: flex-end; padding: 0; }
   .project-modal { border-radius: 22px 22px 0 0; max-height: 92vh; }
   .modal-actions { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .visual-glyph--modal { aspect-ratio: 16 / 7; }
+  .visual-glyph__mark { height: 62px; width: 62px; }
+  .story-modal-thumbs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .timeline-item { gap: 10px; grid-template-columns: 1fr; }
   .story-card { min-height: 320px; padding: 24px; }
   .message-card { gap: 12px; padding: 18px; }
@@ -1335,7 +1466,15 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .public-site .modal-backdrop { background: rgba(9, 30, 27, 0.72); backdrop-filter: blur(8px); }
 .public-site .project-modal { border-radius: 4px 24px 24px 24px; }
 .public-site .modal-close { background: var(--sage-soft); }
-.public-site .modal-kicker { color: var(--forest); }
+.public-site .modal-badge { background: var(--sage); border-radius: 3px; }
+.public-site .modal-section__count { border-radius: 3px; }
+.public-site .keyword-chip { border-radius: 3px; }
+.public-site .keyword-chip--lead { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.public-site .feature-cell { border-radius: 4px 12px 12px 12px; }
+.public-site .visual-glyph { border-radius: 4px 20px 20px 20px; }
+.public-site .visual-glyph__mark { border-radius: 50% 50% 50% 8px; }
+.public-site .story-modal-cover img { border-radius: 4px 20px 20px 20px; }
+.public-site .story-modal-thumbs img { border-radius: 3px 10px 10px 10px; }
 
 @media (max-width: 900px) {
   .public-site .archive-showcase { grid-template-columns: minmax(190px, 0.55fr) minmax(0, 1.45fr); }
