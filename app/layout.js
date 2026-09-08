@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./impact-theme.css";
 import {
   SEO_DESCRIPTION,
   SEO_KEYWORDS,
@@ -119,7 +120,7 @@ const STRUCTURED_DATA = {
 };
 
 export const viewport = {
-  themeColor: "#eef2ef",
+  themeColor: "#3024a8",
   colorScheme: "light",
 };
 

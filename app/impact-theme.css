@@ -1,0 +1,337 @@
+/*
+ * Human Impact theme
+ * The visual system selected from public/test-3.html. This file is loaded after
+ * globals.css so the existing components, states and admin-managed content stay intact.
+ */
+
+.public-site {
+  --ink: #211d35;
+  --ink-soft: #423c5c;
+  --forest: #3024a8;
+  --forest-dark: #261b8f;
+  --sage: #d8d2ff;
+  --sage-soft: #efedff;
+  --paper: #f7f6fb;
+  --surface: #fffefe;
+  --line: #dedbea;
+  --line-strong: #c9c4df;
+  --muted: #68627b;
+  --muted-light: #8c86a0;
+  --apricot: #ff7b67;
+  --impact-yellow: #ffcb66;
+  --impact-purple: #3024a8;
+  --impact-lilac: #d8d2ff;
+  --shadow-sm: 0 14px 34px rgba(48, 36, 168, 0.09);
+  --shadow-md: 0 26px 68px rgba(48, 36, 168, 0.16);
+  --radius-sm: 12px;
+  --radius-md: 24px;
+  --radius-lg: 36px;
+  background: var(--paper);
+}
+
+.public-site .container { max-width: 1240px; }
+.public-site .section { padding-block: clamp(96px, 10vw, 148px); }
+.public-site .section-head { gap: 18px; max-width: 920px; }
+.public-site .section-title {
+  font-size: clamp(2.55rem, 5.7vw, 5rem);
+  font-weight: 850;
+  letter-spacing: -0.07em;
+  line-height: 1.06;
+}
+.public-site .section-description { color: var(--muted); line-height: 1.85; }
+.public-site .eyebrow {
+  color: var(--impact-purple);
+  font-size: 0.69rem;
+  letter-spacing: 0.15em;
+}
+.public-site .eyebrow::before { background: var(--impact-yellow); height: 8px; width: 8px; }
+.public-site .eyebrow-divider { color: var(--apricot); }
+.public-site .eyebrow-en { color: var(--muted-light); }
+
+.public-site .button {
+  border-radius: 999px;
+  font-weight: 800;
+  padding-inline: 23px;
+}
+.public-site .button--primary { background: var(--impact-purple); color: white; }
+.public-site .button--primary:hover:not(:disabled) { background: #4639c5; }
+.public-site .button--secondary { border-color: var(--impact-purple); color: var(--impact-purple); }
+.public-site .button--soft { background: var(--impact-lilac); color: var(--impact-purple); }
+
+/* Quiet header, so the opening statement owns the page. */
+.public-site .site-nav,
+.public-site .site-nav.is-scrolled {
+  background: rgba(247, 246, 251, 0.94);
+  border-color: var(--line);
+  box-shadow: none;
+}
+.public-site .nav-inner { height: 76px; }
+.public-site .brand-mark {
+  background: var(--impact-purple);
+  border-radius: 50%;
+  transform: none;
+}
+.public-site .brand-monogram { transform: none; }
+.public-site .brand-mark-status { background: var(--apricot); border-color: var(--paper); }
+.public-site .brand-name { font-weight: 850; }
+.public-site .brand-copy-accent { color: var(--impact-purple); }
+.public-site .nav-link::after { background: var(--apricot); }
+.public-site .nav-link:hover,
+.public-site .nav-link.is-active { color: var(--impact-purple); }
+.public-site .desktop-nav > .button { background: var(--impact-purple); color: white; }
+.public-site .desktop-nav > .button:hover { background: #4639c5; }
+.public-site .nav-toggle { border-color: var(--impact-purple); border-radius: 50%; }
+
+/* Hero: one large human promise, with media kept as supporting evidence. */
+.public-site .hero.hero--slider { background: var(--paper); padding-bottom: 30px; }
+.public-site .hero-stage {
+  background: var(--impact-purple);
+  border-radius: 0 0 54px 54px;
+  color: white;
+  min-height: clamp(690px, 82vh, 820px);
+}
+.public-site .hero-stage--quote,
+.public-site .hero-stage--image,
+.public-site .hero-stage--video { background: var(--impact-purple); }
+.public-site .hero-slide-wash,
+.public-site .hero-stage--quote .hero-slide-wash {
+  background:
+    linear-gradient(90deg, rgba(48, 36, 168, 0.98) 0%, rgba(48, 36, 168, 0.92) 54%, rgba(48, 36, 168, 0.58) 100%),
+    linear-gradient(0deg, rgba(24, 16, 107, 0.44), transparent 62%);
+}
+.public-site .hero-stage--quote::after {
+  bottom: -0.22em;
+  color: rgba(255, 255, 255, 0.055);
+  content: "HUMAN\A FIRST";
+  font-family: var(--font-display);
+  font-size: clamp(7rem, 19vw, 17rem);
+  font-weight: 900;
+  line-height: 0.67;
+  pointer-events: none;
+  position: absolute;
+  right: -0.035em;
+  text-align: right;
+  white-space: pre;
+}
+.public-site .hero-slide-quote-decor { background: transparent; }
+.public-site .hero-quote-watermark { color: rgba(255, 255, 255, 0.05); right: 5%; top: 8%; }
+.public-site .hero-quote-mesh { display: none; }
+.public-site .hero-slide-content {
+  min-height: clamp(690px, 82vh, 820px);
+  padding-bottom: 42px;
+  padding-top: 108px;
+}
+.public-site .hero-slide-copy { max-width: 1010px; }
+.public-site .hero-slide-badges { margin-bottom: 28px; }
+.public-site .hero-slide-kicker { color: var(--impact-yellow); letter-spacing: 0.15em; }
+.public-site .hero-slide-kicker::before { background: var(--impact-yellow); }
+.public-site .hero-type-pill { border-color: rgba(255, 203, 102, 0.48); color: var(--impact-yellow); }
+.public-site .hero-author-tag { margin-bottom: 15px; }
+.public-site .hero-author-role { color: var(--impact-lilac); }
+.public-site .hero-slide-copy h1 {
+  font-size: clamp(3.7rem, 7.5vw, 7rem);
+  font-weight: 880;
+  letter-spacing: -0.078em;
+  line-height: 0.98;
+  max-width: 1010px;
+}
+.public-site .hero-slide-copy > p { color: #e7e3ff; font-size: clamp(1.04rem, 1.55vw, 1.22rem); }
+.public-site .hero-slide-actions { margin-top: 30px; }
+.public-site .button--hero { background: var(--impact-yellow); color: var(--ink); }
+.public-site .button--hero:hover { background: #ffd985; }
+.public-site .button--hero-quiet { border-color: rgba(255, 255, 255, 0.52); color: white; }
+.public-site .button--hero-quiet:hover { background: rgba(255, 255, 255, 0.1); }
+.public-site .hero-quick-stats { border-color: rgba(255, 255, 255, 0.2); max-width: 820px; }
+.public-site .hero-quick-stat-value small { color: var(--impact-yellow); }
+.public-site .hero-quick-stat-label { color: var(--impact-lilac); }
+.public-site .hero-slider-controls { border-color: rgba(255, 255, 255, 0.2); }
+.public-site .hero-progress-track > span { background: var(--impact-yellow); }
+.public-site .hero-slide-buttons button { border-color: rgba(255, 255, 255, 0.45); }
+
+/* Training cards turn the service catalogue into a bright, approachable set. */
+.public-site #services { background: var(--paper); }
+.public-site #services .section-head { margin-inline: auto; text-align: center; }
+.public-site #services .section-description { margin-inline: auto; }
+.public-site .service-grid { gap: 14px; }
+.public-site .service-card {
+  border: 0;
+  border-radius: 24px;
+  box-shadow: none;
+  min-height: 310px;
+  padding: 30px;
+}
+.public-site .service-card:nth-child(4n + 1) { background: var(--impact-lilac); }
+.public-site .service-card:nth-child(4n + 2) { background: var(--impact-yellow); }
+.public-site .service-card:nth-child(4n + 3) { background: var(--impact-purple); color: white; }
+.public-site .service-card:nth-child(4n + 4) { background: var(--apricot); }
+.public-site .service-card:nth-child(4n + 3) .service-card__tagline,
+.public-site .service-card:nth-child(4n + 3) .service-card__description { color: rgba(255, 255, 255, 0.75); }
+.public-site .service-card__icon { background: rgba(255, 255, 255, 0.48); border: 0; border-radius: 50%; color: var(--impact-purple); }
+.public-site .service-card__title { font-size: 1.48rem; }
+.public-site .service-card__tagline { color: var(--impact-purple); }
+.public-site .service-card__description { color: var(--ink-soft); }
+.public-site .service-card:hover { border-color: transparent; box-shadow: var(--shadow-md); transform: translateY(-5px); }
+.public-site .service-card--cta { background: var(--surface) !important; border: 1px solid var(--line); color: var(--ink) !important; }
+
+/* Principles are presented as one connected human-first manifesto. */
+.public-site #philosophy { background: var(--impact-lilac); }
+.public-site #philosophy::after { display: none; }
+.public-site .principle-grid { gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.public-site .principle-grid::before,
+.public-site .principle::after { display: none; }
+.public-site .principle {
+  background: rgba(255, 255, 255, 0.54);
+  border: 0 !important;
+  border-radius: 24px;
+  min-height: 330px;
+  padding: 34px;
+}
+.public-site .principle:nth-child(2) { background: var(--impact-purple); color: white; }
+.public-site .principle:nth-child(3) { background: var(--impact-yellow); }
+.public-site .principle-icon { color: var(--impact-purple); margin: 58px 0 28px; }
+.public-site .principle:nth-child(2) .principle-icon,
+.public-site .principle:nth-child(2) .principle-kicker { color: var(--impact-yellow); }
+.public-site .principle:nth-child(2) p { color: rgba(255, 255, 255, 0.72); }
+.public-site .principle-kicker { color: var(--impact-purple); }
+.public-site .principle-index { color: var(--apricot); left: 34px; top: 28px; }
+
+/* Tool archive: lilac field, yellow spotlight, compact index below it. */
+.public-site #archive { background: #f1efff; }
+.public-site .filter-button.is-active { background: var(--impact-purple); border-color: var(--impact-purple); }
+.public-site .archive-showcase { background: var(--impact-yellow); border-radius: 28px; }
+.public-site .archive-showcase__visual { background: var(--impact-purple); color: var(--impact-lilac); }
+.public-site .archive-showcase__visual::before { opacity: 0.35; }
+.public-site .archive-showcase__visual::after { box-shadow: -92px -54px 0 -18px var(--apricot), 104px 68px 0 -22px var(--impact-yellow); }
+.public-site .archive-showcase__eyebrow,
+.public-site .archive-showcase__category { color: var(--impact-purple); }
+.public-site .archive-showcase__eyebrow span:last-child { border-color: rgba(48, 36, 168, 0.28); }
+.public-site .project-detail-button--showcase { background: var(--impact-purple); color: white; }
+.public-site .archive-showcase-track > span { background: var(--impact-purple); }
+.public-site .archive-index { border-top-color: var(--impact-purple); }
+.public-site .archive-item__icon,
+.public-site .archive-item__category { color: var(--impact-purple); }
+.public-site .archive-direct-link,
+.public-site .project-detail-button { color: var(--impact-purple); }
+.public-site .archive-toggle { color: var(--impact-purple); }
+
+/* Career contrast: experience is the one quiet, deep chapter. */
+.public-site #experience { background: var(--ink); }
+.public-site #experience::before { background: linear-gradient(90deg, var(--impact-yellow) 0 18%, var(--apricot) 18% 28%, transparent 28%); }
+.public-site #experience .eyebrow,
+.public-site .timeline-period { color: var(--impact-yellow); }
+.public-site .timeline-item::before { background: var(--apricot); }
+.public-site .timeline-item-index { color: var(--impact-yellow); }
+.public-site .timeline-item-line { background: var(--apricot); }
+
+/* Stories keep the prototype's colored editorial cards. */
+.public-site #stories { background: var(--paper); }
+.public-site #stories .section-head--center { max-width: 900px; }
+.public-site .story-grid { gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.public-site .story-card,
+.public-site .story-card:not(:first-child) {
+  background: var(--impact-yellow);
+  border: 0;
+  border-radius: 24px;
+  min-height: 340px;
+}
+.public-site .story-card:first-child {
+  background: var(--impact-purple);
+  border-radius: 24px;
+  grid-column: auto;
+  grid-row: span 2;
+  min-height: 694px;
+}
+.public-site .story-card:nth-child(3n) { background: var(--apricot); }
+.public-site .story-card .story-tag,
+.public-site .story-card .read-label,
+.public-site .story-card .story-more { color: var(--impact-purple); }
+.public-site .story-card:first-child .story-tag,
+.public-site .story-card:first-child .read-label,
+.public-site .story-card:first-child .story-more { color: var(--impact-yellow); }
+.public-site .story-card p { color: var(--ink-soft); }
+.public-site .story-card:first-child p { color: rgba(255, 255, 255, 0.72); }
+
+/* Peer messages sit on a soft shared surface. */
+.public-site #guestbook { background: var(--impact-lilac); }
+.public-site .guestbook-form { border: 0; border-radius: 24px; box-shadow: var(--shadow-sm); }
+.public-site .guestbook-panel-label { color: var(--impact-purple); }
+.public-site .testimonial-count { background: var(--impact-purple); border-radius: 50%; }
+.public-site .message-card { background: rgba(255, 255, 255, 0.72); border-radius: 20px; }
+.public-site .message-emoji { background: var(--impact-yellow); border-radius: 50%; }
+.public-site .emoji-button.is-selected { background: var(--impact-lilac); border-color: var(--impact-purple); }
+
+/* The final request is a bright invitation instead of a dark utility panel. */
+.public-site #contact { background: var(--impact-yellow); }
+.public-site .contact-panel {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ink);
+  padding: 0;
+}
+.public-site .contact-panel::before,
+.public-site .contact-panel::after { display: none; }
+.public-site .contact-panel .eyebrow { color: var(--impact-purple); }
+.public-site .contact-panel .eyebrow-en,
+.public-site .contact-panel .section-description { color: rgba(33, 29, 53, 0.68); }
+.public-site .contact-panel h2 { font-size: clamp(2.55rem, 5vw, 4.9rem); }
+.public-site .contact-item { border-color: rgba(33, 29, 53, 0.2); }
+.public-site .contact-label { color: rgba(33, 29, 53, 0.58); }
+.public-site .contact-icon { background: var(--impact-purple); color: white; }
+.public-site .contact-action { color: var(--impact-purple); }
+.public-site .contact-request-form { border-radius: 24px; box-shadow: 0 24px 60px rgba(48, 36, 168, 0.16); }
+.public-site .request-form-head > span { color: var(--impact-purple); }
+.public-site .request-type-grid button,
+.public-site .request-field input,
+.public-site .request-field textarea { background: #f4f2ff; border-radius: 12px; }
+.public-site .request-type-grid button.is-active { background: var(--impact-lilac); border-color: var(--impact-purple); color: var(--impact-purple); }
+.public-site .request-submit { background: var(--impact-purple); color: white; }
+.public-site .request-submit:hover:not(:disabled) { background: #4639c5; }
+
+.public-site .site-footer { background: var(--ink); }
+.public-site .site-footer .brand-mark { background: var(--impact-purple); color: white; }
+.public-site .footer-build-note { color: var(--impact-yellow); }
+
+.public-site .modal-backdrop { background: rgba(33, 29, 53, 0.76); }
+.public-site .project-modal,
+.public-site .story-modal { border-radius: 24px; }
+.public-site .keyword-chip--lead { background: var(--impact-purple); border-color: var(--impact-purple); }
+
+@media (max-width: 1020px) {
+  .public-site .principle-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .public-site .principle { border: 0 !important; }
+}
+
+@media (max-width: 820px) {
+  .public-site .mobile-nav { background: var(--paper); }
+  .public-site .story-card:first-child { min-height: 480px; }
+}
+
+@media (max-width: 640px) {
+  .public-site .section { padding-block: 76px; }
+  .public-site .section-title { font-size: clamp(2.15rem, 10.5vw, 3rem); line-height: 1.09; }
+  .public-site .hero.hero--slider { padding-bottom: 18px; }
+  .public-site .hero-stage { border-radius: 0 0 30px 30px; }
+  .public-site .hero-stage,
+  .public-site .hero-stage:not(.hero-stage--quote),
+  .public-site .hero-slide-content,
+  .public-site .hero-slide-content:not(.hero-slide-content--workbench) { min-height: max(650px, calc(100svh - 68px)); }
+  .public-site .hero-slide-content,
+  .public-site .hero-slide-content:not(.hero-slide-content--workbench) { padding-bottom: 26px; padding-top: 82px; }
+  .public-site .hero-slide-copy h1,
+  .public-site .hero-stage--quote .hero-slide-copy h1 { font-size: clamp(2.65rem, 12.2vw, 3.45rem); line-height: 0.99; }
+  .public-site .hero-quick-stats { display: grid; grid-template-columns: repeat(2, 1fr); }
+  .public-site .hero-stage--quote::after { bottom: -0.08em; font-size: 8.4rem; }
+  .public-site .service-grid { grid-template-columns: 1fr; }
+  .public-site .service-card { min-height: 280px; }
+  .public-site .principle-grid { grid-template-columns: 1fr; }
+  .public-site .principle { min-height: 300px; padding: 30px !important; }
+  .public-site .principle-index { left: auto; right: 30px; top: 28px; }
+  .public-site .archive-showcase { border-radius: 22px; }
+  .public-site .story-grid { grid-template-columns: 1fr; }
+  .public-site .story-card,
+  .public-site .story-card:first-child,
+  .public-site .story-card:not(:first-child) { min-height: 0; }
+  .public-site .contact-panel { border-radius: 0; padding: 0; }
+  .public-site .contact-request-form { border-radius: 20px; }
+}
