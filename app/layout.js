@@ -24,7 +24,10 @@ export const metadata = {
   creator: SITE_NAME,
   publisher: SITE_NAME,
   authors: [{ name: "박주임 (Ju-im Park)", url: SITE_URL }],
-  icons: { icon: "/images/smartworklab-logo.png" },
+  icons: {
+    icon: [{ url: "/icon.svg?v=smartworklab-2", type: "image/svg+xml" }],
+    shortcut: "/icon.svg?v=smartworklab-2",
+  },
   alternates: { canonical: "/" },
   openGraph: {
     title: SEO_TITLE,
