@@ -17,6 +17,9 @@ npm run dev     # http://localhost:3000
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 주소 | O |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 읽기용 공개 키 | O |
 | `SUPABASE_SERVICE_ROLE_KEY` | **서버 전용 쓰기 키** | X (절대 `NEXT_PUBLIC_` 금지) |
+| `RESEND_API_KEY` | 문의 폼 메일 발송용 서버 키 | X (절대 `NEXT_PUBLIC_` 금지) |
+| `CONTACT_FROM_EMAIL` | Resend에서 인증한 발신 주소 | X |
+| `CONTACT_TO_EMAIL` | 문의를 받을 이메일 주소 | X |
 
 `SUPABASE_SERVICE_ROLE_KEY`가 없어도 동작하지만, 그 경우 쓰기까지 공개 키로 처리되므로
 `supabase_schema.sql`의 안내대로 서비스 롤 키를 설정하는 것을 권장합니다.

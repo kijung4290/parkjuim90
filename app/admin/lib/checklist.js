@@ -125,7 +125,7 @@ function checkProfile(data) {
     if (isBlank(profile.role)) issues.push(problem('직함이 비어 있습니다. 첫 화면 글귀 슬라이드에 이름과 함께 보입니다.'));
 
     if (isBlank(profile.email)) {
-        issues.push(problem('이메일이 비어 있으면 문의 영역의 [이메일 작성하기] 버튼이 눌리지 않습니다.'));
+        issues.push(problem('이메일이 비어 있으면 문의 영역의 [문의 보내기] 버튼이 눌리지 않습니다.'));
     } else if (!looksLikeEmail(profile.email)) {
         issues.push(problem('이메일 형식이 올바르지 않습니다. 예: hello@example.com'));
     }
