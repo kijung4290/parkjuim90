@@ -23,12 +23,6 @@ Vercel is the creators of Next.js, so it works perfectly out of the box.
         **Value:** the `service_role` key from Project Settings > API.
         Server-side writes use this key, so the public `anon` key can stay read-only.
         **Never** rename it with a `NEXT_PUBLIC_` prefix — that would expose it to every visitor.
-    *   **Key:** `RESEND_API_KEY`
-        **Value:** the API key created in the Resend dashboard. This is used by the contact form and must remain server-only.
-    *   **Key:** `CONTACT_FROM_EMAIL`
-        **Value:** `일잘알랩 <contact@parkjuim90.cloud>` (the domain must be verified in Resend first).
-    *   **Key:** `CONTACT_TO_EMAIL`
-        **Value:** the inbox that should receive inquiries, for example `parkjuim90@gmail.com`.
 7.  Click **"Deploy"**.
 
 Wait a minute, and your site will be live! Vercel will give you a domain like `social-worker-portfolio.vercel.app`.
@@ -64,9 +58,6 @@ Render is a great alternative if you prefer it.
     *   `NEXT_PUBLIC_SUPABASE_URL` = Your URL
     *   `NEXT_PUBLIC_SUPABASE_ANON_KEY` = Your anon key
     *   `SUPABASE_SERVICE_ROLE_KEY` = Your service_role key (server-side only)
-    *   `RESEND_API_KEY` = Your Resend API key (server-side only)
-    *   `CONTACT_FROM_EMAIL` = `일잘알랩 <contact@parkjuim90.cloud>`
-    *   `CONTACT_TO_EMAIL` = The inbox that receives inquiries
 8.  Click **"Create Web Service"**.
 
 Render might take a few minutes to build and deploy.
@@ -81,10 +72,6 @@ Render might take a few minutes to build and deploy.
 *   **Images not loading:**
     *   If you added images locally to `public/`, they should work.
     *   If you are linking to external images, make sure the links are valid.
-*   **Contact form cannot send email:**
-    *   Add and verify `parkjuim90.cloud` in Resend, including the DNS records Resend provides.
-    *   Confirm that `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, and `CONTACT_TO_EMAIL` are set in the deployment environment, then redeploy.
-    *   The sender must use the verified domain. The visitor's address is applied as Reply-To, so replying from your inbox goes directly to the visitor.
 *   **Photo upload in the admin 기록 section fails:**
     *   The uploader stores files in the Supabase Storage bucket `portfolio-media`. Run the storage section of `supabase_schema.sql` once (Supabase Dashboard > SQL Editor) to create the bucket and its public-read policy.
     *   Uploads are written with `SUPABASE_SERVICE_ROLE_KEY`, so that variable must be set in the deployment environment. Without it the request is rejected by row level security.

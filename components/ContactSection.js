@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   Check,
   ClipboardCheck,
@@ -55,15 +55,13 @@ const REQUEST_TYPES = [
 ];
 
 export default function ContactSection({ profile }) {
-  const startedAt = useRef(Date.now());
   const [copied, setCopied] = useState(false);
   const [requestType, setRequestType] = useState(REQUEST_TYPES[0].id);
   const [name, setName] = useState('');
   const [organization, setOrganization] = useState('');
   const [replyEmail, setReplyEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [website, setWebsite] = useState('');
-  const [submitState, setSubmitState] = useState({ status: 'idle', message: '' });
+  const [mailOpened, setMailOpened] = useState(false);
   const email = profile?.email;
   const selectedRequest = REQUEST_TYPES.find((type) => type.id === requestType) || REQUEST_TYPES[0];
 
@@ -77,32 +75,28 @@ export default function ContactSection({ profile }) {
     }
   };
 
-  const sendEmail = async (event) => {
+  const openEmailDraft = (event) => {
     event.preventDefault();
-    if (!email || submitState.status === 'sending') return;
+    if (!email) return;
 
-    setSubmitState({ status: 'sending', message: '문의를 보내고 있습니다.' });
+    const subject = `[포트폴리오] ${selectedRequest.subject} - ${organization || name}`;
+    const body = [
+      '안녕하세요. 포트폴리오를 보고 문의드립니다.',
+      '',
+      `[문의 종류] ${selectedRequest.label}`,
+      `[이름] ${name}`,
+      `[소속·기관] ${organization || '미입력'}`,
+      `[회신 이메일] ${replyEmail}`,
+      '',
+      '[문의 내용]',
+      message,
+      '',
+      '---',
+      'parkjuim90.cloud에서 작성한 문의입니다.',
+    ].join('\n');
 
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestType, name, organization, replyEmail, message, website, startedAt: startedAt.current }),
-      });
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) throw new Error(result.error || '메일을 보내지 못했습니다. 잠시 뒤 다시 시도해주세요.');
-
-      setName('');
-      setOrganization('');
-      setReplyEmail('');
-      setMessage('');
-      setWebsite('');
-      startedAt.current = Date.now();
-      setSubmitState({ status: 'success', message: '문의가 전송되었습니다. 확인 후 입력하신 이메일로 답변드리겠습니다.' });
-    } catch (error) {
-      setSubmitState({ status: 'error', message: error.message });
-    }
+    setMailOpened(true);
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
@@ -152,14 +146,14 @@ export default function ContactSection({ profile }) {
             </div>
           </div>
 
-          <form className="contact-request-form" onSubmit={sendEmail} aria-labelledby="request-form-title">
+          <form className="contact-request-form" onSubmit={openEmailDraft} aria-labelledby="request-form-title">
             <div className="request-form-head">
               <span className="request-note-label">
                 <span>요청서</span>
                 <span className="request-note-label-en" lang="en">Request note</span>
               </span>
               <strong id="request-form-title">어떤 도움이 필요하세요?</strong>
-              <p>작성하신 문의는 이 화면에서 바로 전송됩니다.</p>
+              <p>요청 종류를 선택하면 이메일 제목과 본문이 자동으로 정리됩니다.</p>
             </div>
 
             <fieldset className="request-type-fieldset">
@@ -173,7 +167,7 @@ export default function ContactSection({ profile }) {
                     aria-pressed={requestType === type.id}
                     onClick={() => {
                       setRequestType(type.id);
-                      setSubmitState({ status: 'idle', message: '' });
+                      setMailOpened(false);
                     }}
                   >
                     <type.icon size={17} aria-hidden="true" />
@@ -200,17 +194,15 @@ export default function ContactSection({ profile }) {
                 <span>문의 내용</span>
                 <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder={selectedRequest.placeholder} required />
               </label>
-              <label className="request-field request-field--trap" aria-hidden="true">
-                <span>웹사이트</span>
-                <input value={website} onChange={(event) => setWebsite(event.target.value)} tabIndex="-1" autoComplete="off" />
-              </label>
             </div>
 
-            <button className="button request-submit" type="submit" disabled={!email || submitState.status === 'sending'}>
-              <Send size={17} aria-hidden="true" /> {submitState.status === 'sending' ? '전송 중…' : '문의 보내기'}
+            <button className="button request-submit" type="submit" disabled={!email}>
+              <Send size={17} aria-hidden="true" /> 이메일 작성하기
             </button>
-            <p className={`request-form-note request-form-note--${submitState.status}`} aria-live="polite">
-              {submitState.message || '입력하신 이메일은 문의 답변 용도로만 사용됩니다.'}
+            <p className="request-form-note" aria-live="polite">
+              {mailOpened
+                ? '메일 앱을 열었습니다. 내용을 확인한 뒤 전송해주세요.'
+                : '버튼을 누르면 입력 내용이 채워진 메일 앱이 열립니다. 최종 전송은 메일 앱에서 진행됩니다.'}
             </p>
           </form>
         </div>

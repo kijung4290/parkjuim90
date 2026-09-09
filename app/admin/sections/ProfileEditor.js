@@ -19,7 +19,7 @@ export function ProfileEditor({ section, active, issues, profile, mutations }) {
                 <Field label="직함" required>
                     <input value={profile.role || ''} onChange={set('role')} placeholder="예: 사회복지사 & 스마트워크 빌더" />
                 </Field>
-                <Field label="이메일" required hint="(사이트에 표시되는 문의 이메일입니다)">
+                <Field label="이메일" required hint="(문의 버튼이 이 주소로 메일을 엽니다)">
                     <input type="email" value={profile.email || ''} onChange={set('email')} placeholder="hello@example.com" />
                 </Field>
                 <Field label="활동 지역">
