@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
+import { SERVICES } from '@/lib/seo';
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const REQUEST_LABELS = {
-  'staff-training': '사회복지 직원교육·직원역량강화',
-  'smartwork-training': '스마트워크 교육',
-  'smartwork-consulting': '스마트워크 컨설팅',
-  'vibe-coding': '바이브코딩 교육',
-  'custom-template': '업무양식 맞춤 제작',
+  ...Object.fromEntries(SERVICES.map((service) => [service.id, service.name])),
   collaboration: '도구 도입·협업',
   other: '기타 문의',
 };
