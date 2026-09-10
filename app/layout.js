@@ -3,6 +3,7 @@ import "./impact-theme.css";
 import "./brand-refresh.css";
 import {
   CONTACT_EMAIL,
+  CONTENT_UPDATED_AT,
   SAME_AS,
   SEO_DESCRIPTION,
   SEO_KEYWORDS,
@@ -85,7 +86,10 @@ const STRUCTURED_DATA = {
       url: SITE_URL,
       name: `${SITE_NAME} 공식 홈페이지`,
       isPartOf: { "@id": `${SITE_URL}/#website` },
-      about: { "@id": `${SITE_URL}/#person` },
+      // ProfilePage는 "누구의 프로필인지"를 mainEntity로 가리켜야 합니다.
+      // about도 schema.org에서 유효하지만, 구글이 필수로 확인하는 속성은 mainEntity입니다.
+      mainEntity: { "@id": `${SITE_URL}/#person` },
+      dateModified: CONTENT_UPDATED_AT,
       inLanguage: "ko-KR",
     },
     {
