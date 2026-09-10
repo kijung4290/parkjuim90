@@ -12,7 +12,19 @@ import StorySection from '@/components/StorySection';
 import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 
-export const dynamic = 'force-dynamic';
+/**
+ * 홈 화면은 미리 만들어 두고 10분마다 다시 만듭니다(ISR).
+ * 요청마다 새로 그리면(force-dynamic) CDN 캐시를 지나치므로 첫 응답이 느려지고,
+ * 검색 로봇이 한 번에 훑을 수 있는 양도 줄어듭니다.
+ * 관리자가 [저장하기]를 누르면 app/api/portfolio/route.js의 revalidatePath('/')가
+ * 이 캐시를 즉시 비우므로, 수정 내용은 예전처럼 바로 반영됩니다.
+ */
+export const revalidate = 600;
+
+/** canonical은 레이아웃이 아니라 페이지마다 지정해야 합니다. */
+export const metadata = {
+  alternates: { canonical: '/' },
+};
 
 export default async function Home() {
   const data = (await getPortfolioData()) || {};

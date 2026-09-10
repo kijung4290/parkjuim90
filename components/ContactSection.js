@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import {
+  Bot,
   Check,
+  CircuitBoard,
   ClipboardCheck,
   CodeXml,
   Copy,
-  FileSpreadsheet,
   Globe2,
   GraduationCap,
   Handshake,
@@ -14,16 +15,22 @@ import {
   Mail,
   MapPin,
   MessageSquareText,
+  Network,
+  RefreshCcw,
   Send,
+  Sparkles,
 } from 'lucide-react';
 import { SERVICES } from '@/lib/seo';
 
 const SERVICE_ICONS = {
-  'staff-training': GraduationCap,
+  'generative-ai-training': Sparkles,
   'smartwork-training': Laptop,
-  'smartwork-consulting': ClipboardCheck,
-  'vibe-coding': CodeXml,
-  'custom-template': FileSpreadsheet,
+  'ai-automation-training': Bot,
+  'vibe-coding-training': CodeXml,
+  'process-improvement': RefreshCcw,
+  'ai-strategy': CircuitBoard,
+  'task-automation': Network,
+  'organization-innovation': ClipboardCheck,
 };
 
 /**
@@ -110,7 +117,7 @@ export default function ContactSection({ profile }) {
               <span className="eyebrow-en" lang="en">Request & collaboration</span>
             </span>
             <h2 id="contact-title">필요한 일을 알려주시면<br />함께 방법을 찾겠습니다.</h2>
-            <p className="section-description">사회복지 직원교육·직원역량강화, 스마트워크 교육·컨설팅, 바이브코딩 교육부터 반복 업무를 줄이는 업무양식 맞춤 제작까지 편하게 문의해주세요.</p>
+            <p className="section-description">생성형 AI 교육, 스마트워크 교육, AI 업무자동화 교육, 바이브코딩 교육부터 업무 프로세스 개선, AI 활용 전략, 반복 업무 자동화, 조직 업무혁신 컨설팅까지 편하게 문의해주세요.</p>
 
             <div className="contact-list" role="list">
               <div className="contact-item" role="listitem">

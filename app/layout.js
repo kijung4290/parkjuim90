@@ -2,11 +2,14 @@ import "./globals.css";
 import "./impact-theme.css";
 import "./brand-refresh.css";
 import {
+  CONTACT_EMAIL,
+  SAME_AS,
   SEO_DESCRIPTION,
   SEO_KEYWORDS,
   SEO_SHORT_DESCRIPTION,
   SEO_TITLE,
   SERVICES,
+  SITE_LOGO,
   SITE_NAME,
   SITE_URL,
 } from "@/lib/seo";
@@ -28,7 +31,6 @@ export const metadata = {
     icon: [{ url: "/icon.svg?v=smartworklab-2", type: "image/svg+xml" }],
     shortcut: "/icon.svg?v=smartworklab-2",
   },
-  alternates: { canonical: "/" },
   openGraph: {
     title: SEO_TITLE,
     description: SEO_DESCRIPTION,
@@ -36,12 +38,23 @@ export const metadata = {
     siteName: SITE_NAME,
     locale: "ko_KR",
     type: "website",
-    images: [{ url: "/images/smartworklab-logo.png", width: 1254, height: 1254, alt: "일잘알랩 SMARTWORK LAB" }],
+    images: [
+      {
+        url: "/images/smartworklab-logo.png",
+        width: 1254,
+        height: 1254,
+        type: "image/png",
+        alt: "일잘알랩 SMARTWORK LAB",
+      },
+    ],
   },
+  // 로고가 정사각형이라 summary_large_image(1.91:1)로 쓰면 위아래가 잘립니다.
+  // 1200x630 배너 이미지를 따로 만들면 summary_large_image로 되돌리세요.
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: SEO_TITLE,
     description: SEO_SHORT_DESCRIPTION,
+    images: ["/images/smartworklab-logo.png"],
   },
   robots: {
     index: true,
@@ -83,6 +96,10 @@ const STRUCTURED_DATA = {
       url: SITE_URL,
       jobTitle: "사회복지사 · 스마트워크 교육 강사",
       description: SEO_DESCRIPTION,
+      image: SITE_LOGO,
+      email: `mailto:${CONTACT_EMAIL}`,
+      sameAs: SAME_AS,
+      knowsLanguage: "ko-KR",
       knowsAbout: SEO_KEYWORDS,
       worksFor: { "@id": `${SITE_URL}/#service-provider` },
     },
@@ -93,6 +110,11 @@ const STRUCTURED_DATA = {
       url: `${SITE_URL}/#academy`,
       description: SEO_DESCRIPTION,
       founder: { "@id": `${SITE_URL}/#person` },
+      employee: { "@id": `${SITE_URL}/#person` },
+      logo: SITE_LOGO,
+      image: SITE_LOGO,
+      email: `mailto:${CONTACT_EMAIL}`,
+      sameAs: SAME_AS,
       areaServed: { "@type": "Country", name: "대한민국" },
       availableLanguage: "ko-KR",
       address: {
