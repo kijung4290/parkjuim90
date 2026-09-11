@@ -52,11 +52,11 @@ export default function Navbar() {
   const renderMobileLinks = (onClick) =>
     NAV_LINKS.map((link) => (
       <div className="mobile-nav-group" key={link.id}>
-        <a className={`nav-link${activeSection === link.id ? ' is-active' : ''}`} href={`#${link.id}`} onClick={onClick}>
+        <a className={`nav-link${activeSection === link.id ? ' is-active' : ''}`} href={`/#${link.id}`} onClick={onClick}>
           <strong>{link.label}</strong><span>{link.english}</span>
         </a>
         <div className="mobile-nav-children">
-          {link.children?.map((child) => <a href={`#${child.id}`} key={child.id} onClick={onClick}>{child.label}</a>)}
+          {link.children?.map((child) => <a href={`/#${child.id}`} key={child.id} onClick={onClick}>{child.label}</a>)}
         </div>
       </div>
     ));
@@ -72,17 +72,17 @@ export default function Navbar() {
           <div className="nav-groups">
             {NAV_LINKS.map((link) => (
               <div className="nav-group" key={link.id}>
-                <a className={`nav-group-trigger${activeSection === link.id ? ' is-active' : ''}`} href={`#${link.id}`}>
+                <a className={`nav-group-trigger${activeSection === link.id ? ' is-active' : ''}`} href={`/#${link.id}`}>
                   {link.label}<ChevronDown size={13} aria-hidden="true" />
                 </a>
                 <div className="nav-dropdown">
                   <p>{link.english}</p>
-                  {link.children?.map((child) => <a href={`#${child.id}`} key={child.id}>{child.label}</a>)}
+                  {link.children?.map((child) => <a href={`/#${child.id}`} key={child.id}>{child.label}</a>)}
                 </div>
               </div>
             ))}
           </div>
-          <a className="button button--primary button--small" href="#contact">
+          <a className="button button--primary button--small" href="/#contact">
             협업 문의 <ArrowUpRight size={15} aria-hidden="true" />
           </a>
         </div>
@@ -104,7 +104,7 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="mobile-nav" id="mobile-navigation">
           {renderMobileLinks(closeMenu)}
-          <a className="button button--primary" href="#contact" onClick={closeMenu}>
+          <a className="button button--primary" href="/#contact" onClick={closeMenu}>
             협업 문의 <ArrowUpRight size={16} aria-hidden="true" />
           </a>
         </div>

@@ -29,6 +29,10 @@ export async function POST(request) {
 
         // 홈 화면 캐시를 비워 수정 내용이 바로 보이게 합니다.
         revalidatePath('/');
+        revalidatePath('/stories');
+        revalidatePath('/stories/[slug]', 'page');
+        revalidatePath('/sitemap.xml');
+        revalidatePath('/llms.txt');
         return NextResponse.json({ message: 'Saved successfully' });
     } catch (error) {
         console.error('포트폴리오 저장 오류:', error);

@@ -6,6 +6,8 @@ import {
   SITE_NAME,
   SITE_URL,
 } from '@/lib/seo';
+import { getPortfolioData } from '@/lib/data';
+import { getPublishedStories, getStoryDescription, getStoryPath } from '@/lib/storyRoutes';
 
 /**
  * AI 답변엔진(ChatGPT, Perplexity 등)이 사이트를 요약할 때 먼저 찾는 평문 파일입니다.
@@ -13,14 +15,19 @@ import {
  *
  * 확인: https://parkjuim90.cloud/llms.txt
  */
-export const dynamic = 'force-static';
+export const revalidate = 600;
 
 const listSection = (name) => SERVICES
   .filter((service) => service.section === name)
   .map((service) => `- [${service.name}](${SITE_URL}/#${service.id}): ${service.description}`)
   .join('\n');
 
-export function GET() {
+export async function GET() {
+  const data = (await getPortfolioData()) || {};
+  const storyLines = getPublishedStories(data.stories)
+    .map((story) => `- [${story.title}](${SITE_URL}${getStoryPath(story)}): ${getStoryDescription(story)}`)
+    .join('\n');
+
   const text = [
     `# ${SITE_NAME}`,
     '',
@@ -42,6 +49,10 @@ export function GET() {
     '',
     `- [일잘알랩 홈페이지](${SITE_URL}): 교육·컨설팅 안내, 직접 만든 업무도구, 현장 기록`,
     `- [네이버 블로그](${BLOG_URL}): 사회복지 현장의 AI·자동화 실무 기록`,
+    '',
+    '## 최신 현장 기록',
+    '',
+    storyLines || '- 아직 공개된 기록이 없습니다.',
     '',
   ].join('\n');
 

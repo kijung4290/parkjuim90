@@ -149,12 +149,17 @@ export const createStory = () => ({
     date: '',
     readTime: '3분',
     title: '',
+    slug: '',
     summary: '',
+    seoTitle: '',
+    seoDescription: '',
     keywords: [],
     content: '',
     images: [],
     likes: 0,
     link: '',
+    published: true,
+    updatedAt: '',
 });
 
 export const createStat = () => ({ label: '', value: '', unit: '' });

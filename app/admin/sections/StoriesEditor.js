@@ -58,6 +58,25 @@ export function StoriesEditor({ section, active, issues, items, mutations, uploa
                             </Field>
                         </div>
 
+                        <div className="admin-grid admin-grid--three">
+                            <Field label="공개 상태" hint="(끄면 사이트와 검색엔진에서 숨겨집니다)">
+                                <label className="admin-check-row">
+                                    <input
+                                        type="checkbox"
+                                        checked={story.published !== false}
+                                        onChange={(event) => patch(index, { published: event.target.checked })}
+                                    />
+                                    <span>{story.published !== false ? '공개' : '초안'}</span>
+                                </label>
+                            </Field>
+                            <Field label="글 주소" hint="(비우면 제목으로 자동 생성)">
+                                <input value={story.slug || ''} onChange={(event) => patch(index, { slug: event.target.value })} placeholder="social-welfare-ai" />
+                            </Field>
+                            <Field label="수정일">
+                                <input value={story.updatedAt || ''} onChange={(event) => patch(index, { updatedAt: event.target.value })} placeholder="2026.09.11" />
+                            </Field>
+                        </div>
+
                         <div className="admin-grid">
                             <Field label="제목" required wide>
                                 <input value={story.title || ''} onChange={(event) => patch(index, { title: event.target.value })} />
@@ -75,6 +94,14 @@ export function StoriesEditor({ section, active, issues, items, mutations, uploa
                                     onChange={(event) => patch(index, { summary: event.target.value })}
                                     placeholder="홈 화면 카드에 보여줄 한 줄 요약"
                                 />
+                            </Field>
+
+                            <Field label="SEO 제목" hint="(비우면 글 제목을 사용합니다)" wide>
+                                <input value={story.seoTitle || ''} onChange={(event) => patch(index, { seoTitle: event.target.value })} />
+                            </Field>
+
+                            <Field label="SEO 설명" hint="(비우면 미리보기 문구나 본문으로 자동 생성합니다)" wide>
+                                <textarea value={story.seoDescription || ''} onChange={(event) => patch(index, { seoDescription: event.target.value })} />
                             </Field>
 
                             <LineListField

@@ -771,3 +771,6 @@ summary.admin-item-head::-webkit-details-marker { display: none; }
   .admin-problem-pill { order: -1; }
   .admin-icon-choice { height: 44px; width: 44px; }
 }
+.admin-check-row { align-items: center; display: flex; gap: 10px; min-height: 44px; }
+.admin-check-row input { height: 18px; width: 18px; }
+.admin-check-row span { font-weight: 700; }

@@ -20,5 +20,9 @@ export async function POST(request) {
     }
 
     revalidatePath('/');
+    revalidatePath('/stories');
+    revalidatePath('/stories/[slug]', 'page');
+    revalidatePath('/sitemap.xml');
+    revalidatePath('/llms.txt');
     return NextResponse.json({ message: '코드의 기본 포트폴리오 내용을 Supabase에 반영했습니다.' });
 }

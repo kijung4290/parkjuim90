@@ -18,7 +18,7 @@ export default function Footer({ profile }) {
 
           <nav className="footer-links" aria-label="하단 메뉴">
             {FOOTER_LINKS.map((link) => (
-              <a href={`#${link.id}`} key={link.id}><strong>{link.label}</strong><span>{link.english}</span></a>
+              <a href={`/#${link.id}`} key={link.id}><strong>{link.label}</strong><span>{link.english}</span></a>
             ))}
           </nav>
         </div>

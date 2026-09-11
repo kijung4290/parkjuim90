@@ -1,7 +1,7 @@
 import { getPortfolioData } from '@/lib/data';
 import { DEFAULT_HERO, DEFAULT_PROFILE } from '@/lib/defaults';
 import { TOOL_CATALOG } from '@/data/tools';
-import { getRandomNaverStories } from '@/lib/naverBlog';
+import { getPublishedStories } from '@/lib/storyRoutes';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import BrandOverviewSection from '@/components/BrandOverviewSection';
@@ -28,7 +28,6 @@ export const metadata = {
 
 export default async function Home() {
   const data = (await getPortfolioData()) || {};
-  const blogStories = await getRandomNaverStories(3);
 
   // 저장된 값이 비어 있는 항목만 기본값으로 채웁니다.
   const profile = { ...DEFAULT_PROFILE, ...(data.profile || {}) };
@@ -51,7 +50,7 @@ export default async function Home() {
         <ServicesSection />
         <ArchiveSection projects={projects} />
         <StorySection
-          stories={blogStories.length > 0 ? blogStories : (data.stories || [])}
+          stories={getPublishedStories(data.stories).slice(0, 3)}
           blogUrl={profile.blog}
         />
         <ContactSection profile={profile} />

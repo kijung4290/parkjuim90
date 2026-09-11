@@ -80,6 +80,8 @@ export const ITEM_CHECKS = {
         }
         if (isBlank(story?.date)) issues.push(hint('날짜를 적으면 카드에 함께 보입니다. 예: 2026.08'));
         if (isBlank(story?.tag)) issues.push(hint('분류를 적으면 카드 위에 작은 라벨이 붙습니다.'));
+        if (story?.published !== false && isBlank(story?.summary)) issues.push(hint('요약을 적으면 검색 결과와 AI 답변에서 글의 핵심이 더 잘 전달됩니다.'));
+        if (story?.published !== false && getStoryImages(story).some((image) => isBlank(image.alt))) issues.push(hint('공개 글의 사진에 대체 설명을 적어주세요.'));
         return issues;
     },
 };
